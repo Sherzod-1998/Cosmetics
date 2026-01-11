@@ -1,415 +1,439 @@
 <%- include('includes/header') %>
-<link rel="stylesheet" type="text/css" href="/css/products.css" />
+  <link rel="stylesheet" type="text/css" href="/css/products.css" />
 
-<body>
-  <div class="page">
-    <!-- TOP NAV -->
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo">N</div>
-        <div class="brand-txt">
-          <div class="brand-title">Admin panel</div>
-          <div class="brand-sub">Mahsulotlar boshqaruvi</div>
+  <body>
+    <div class="page">
+      <!-- TOP NAV -->
+      <header class="topbar">
+        <div class="brand">
+          <div class="logo">N</div>
+          <div class="brand-txt">
+            <div class="brand-title">Admin panel</div>
+            <div class="brand-sub">Mahsulotlar boshqaruvi</div>
+          </div>
         </div>
+
+        <nav class="navlinks">
+          <a class="navlink" href="/admin/">Bosh sahifa</a>
+          <a class="navlink active" href="/admin/product/all">Mahsulotlar</a>
+          <a class="navlink" href="/admin/user/all">Foydalanuvchilar</a>
+          <a class="navlink danger" href="/admin/logout"
+            onclick="return confirm('Rostdan ham chiqmoqchimisiz?')">Chiqish</a>
+        </nav>
+
+        <button class="burger" id="burgerBtn" type="button" aria-label="Menu">☰</button>
+      </header>
+
+      <!-- MOBILE DRAWER NAV -->
+      <div class="drawer" id="drawer">
+        <a class="drawer-link" href="/admin/">Bosh sahifa</a>
+        <a class="drawer-link active" href="/admin/product/all">Mahsulotlar</a>
+        <a class="drawer-link" href="/admin/user/all">Foydalanuvchilar</a>
+        <a class="drawer-link danger" href="/admin/logout"
+          onclick="return confirm('Rostdan ham chiqmoqchimisiz?')">Chiqish</a>
       </div>
 
-      <nav class="navlinks">
-        <a class="navlink" href="/admin/">Bosh sahifa</a>
-        <a class="navlink active" href="/admin/product/all">Mahsulotlar</a>
-        <a class="navlink" href="/admin/user/all">Foydalanuvchilar</a>
-        <a class="navlink danger" href="/admin/logout" onclick="return confirm('Rostdan ham chiqmoqchimisiz?')">Chiqish</a>
-      </nav>
-
-      <button class="burger" id="burgerBtn" type="button" aria-label="Menu">☰</button>
-    </header>
-
-    <!-- MOBILE DRAWER NAV -->
-    <div class="drawer" id="drawer">
-      <a class="drawer-link" href="/admin/">Bosh sahifa</a>
-      <a class="drawer-link active" href="/admin/product/all">Mahsulotlar</a>
-      <a class="drawer-link" href="/admin/user/all">Foydalanuvchilar</a>
-      <a class="drawer-link danger" href="/admin/logout" onclick="return confirm('Rostdan ham chiqmoqchimisiz?')">Chiqish</a>
-    </div>
-
-    <main class="container">
-      <!-- HEADER ACTIONS -->
-      <section class="hero">
-        <div>
-          <h1>Mahsulotlar</h1>
-          <p>Mahsulot qo‘shing, tahrir qiling, teglar belgilang, holatini boshqaring.</p>
-        </div>
-
-        <div class="hero-actions">
-          <button class="btn btn-primary" id="openCreateBtn" type="button">+ Yangi mahsulot</button>
-        </div>
-      </section>
-
-      <!-- FILTER BAR (PC) -->
-      <section class="card desktop-only">
-        <form class="filterform" method="GET" action="/admin/product/all">
-          <div class="fgroup">
-            <label>Qidirish</label>
-            <input class="finput" type="text" name="q" value="<%= filters?.q || '' %>" placeholder="Masalan: Cledbel" />
+      <main class="container">
+        <!-- HEADER ACTIONS -->
+        <section class="hero">
+          <div>
+            <h1>Mahsulotlar</h1>
+            <p>Mahsulot qo‘shing, tahrir qiling, teglar belgilang, holatini boshqaring.</p>
           </div>
 
-          <div class="fgroup">
-            <label>Teg</label>
-            <select class="fselect" name="tag">
-              <option value="ALL" <%= (filters?.tag==='ALL')?'selected':'' %>>Barchasi</option>
-              <% (productTagsEnum || []).forEach(function(t){ %>
-                <option value="<%= t %>" <%= (filters?.tag===t)?'selected':'' %>><%= productTagLabels?.[t] || t %></option>
-              <% }) %>
-            </select>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="openCreateBtn" type="button">+ Yangi mahsulot</button>
+          </div>
+        </section>
+
+        <!-- FILTER BAR (PC) -->
+        <section class="card desktop-only">
+          <form class="filterform" method="GET" action="/admin/product/all">
+            <div class="fgroup">
+              <label>Qidirish</label>
+              <input class="finput" type="text" name="q" value="<%= filters?.q || '' %>"
+                placeholder="Masalan: Cledbel" />
+            </div>
+
+            <div class="fgroup">
+              <label>Teg</label>
+              <select class="fselect" name="tag">
+                <option value="ALL" <%=(filters?.tag==='ALL' )?'selected':'' %>>Barchasi</option>
+                <% (productTagsEnum || []).forEach(function(t){ %>
+                  <option value="<%= t %>" <%=(filters?.tag===t)?'selected':'' %>><%= productTagLabels?.[t] || t %>
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
+
+            <div class="fgroup">
+              <label>Holat</label>
+              <select class="fselect" name="status">
+                <option value="ALL" <%=(filters?.status==='ALL' )?'selected':'' %>>Barchasi</option>
+                <% (productStatusEnum || []).forEach(function(s){ %>
+                  <option value="<%= s %>" <%=(filters?.status===s)?'selected':'' %>>
+                    <%= s==='PAUSE' ? "TO‘XTATILGAN" : (s==='PROCESS' ? 'FAOL' : 'O‘CHIRILGAN' ) %>
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
+
+            <div class="fgroup">
+              <label>Saralash</label>
+              <select class="fselect" name="sort">
+                <option value="newest" <%=(filters?.sort==='newest' )?'selected':'' %>>Eng yangi</option>
+                <option value="oldest" <%=(filters?.sort==='oldest' )?'selected':'' %>>Eng eski</option>
+                <option value="price_asc" <%=(filters?.sort==='price_asc' )?'selected':'' %>>Narx (↑)</option>
+                <option value="price_desc" <%=(filters?.sort==='price_desc' )?'selected':'' %>>Narx (↓)</option>
+                <option value="name_asc" <%=(filters?.sort==='name_asc' )?'selected':'' %>>Nom (A→Z)</option>
+                <option value="name_desc" <%=(filters?.sort==='name_desc' )?'selected':'' %>>Nom (Z→A)</option>
+              </select>
+            </div>
+
+            <div class="factions">
+              <button class="btn btn-primary" type="submit">Qo‘llash</button>
+              <a class="btn btn-ghost" href="/admin/product/all">Tozalash</a>
+            </div>
+          </form>
+        </section>
+
+        <!-- DESKTOP TABLE -->
+        <section class="card desktop-only">
+          <div class="card-head">
+            <div class="card-title">Ro‘yxat</div>
+            <div class="card-note">
+              <%= products?.length || 0 %> ta mahsulot
+            </div>
           </div>
 
-          <div class="fgroup">
-            <label>Holat</label>
-            <select class="fselect" name="status">
-              <option value="ALL" <%= (filters?.status==='ALL')?'selected':'' %>>Barchasi</option>
-              <% (productStatusEnum || []).forEach(function(s){ %>
-                <option value="<%= s %>" <%= (filters?.status===s)?'selected':'' %>>
-                  <%= s === 'PAUSE' ? "TO‘XTATILGAN" : (s === 'PROCESS' ? 'FAOL' : 'O‘CHIRILGAN') %>
-                </option>
-              <% }) %>
-            </select>
-          </div>
-
-          <div class="fgroup">
-            <label>Saralash</label>
-            <select class="fselect" name="sort">
-              <option value="newest" <%= (filters?.sort==='newest')?'selected':'' %>>Eng yangi</option>
-              <option value="oldest" <%= (filters?.sort==='oldest')?'selected':'' %>>Eng eski</option>
-              <option value="price_asc" <%= (filters?.sort==='price_asc')?'selected':'' %>>Narx (↑)</option>
-              <option value="price_desc" <%= (filters?.sort==='price_desc')?'selected':'' %>>Narx (↓)</option>
-              <option value="name_asc" <%= (filters?.sort==='name_asc')?'selected':'' %>>Nom (A→Z)</option>
-              <option value="name_desc" <%= (filters?.sort==='name_desc')?'selected':'' %>>Nom (Z→A)</option>
-            </select>
-          </div>
-
-          <div class="factions">
-            <button class="btn btn-primary" type="submit">Qo‘llash</button>
-            <a class="btn btn-ghost" href="/admin/product/all">Tozalash</a>
-          </div>
-        </form>
-      </section>
-
-      <!-- DESKTOP TABLE -->
-      <section class="card desktop-only">
-        <div class="card-head">
-          <div class="card-title">Ro‘yxat</div>
-          <div class="card-note"><%= products?.length || 0 %> ta mahsulot</div>
-        </div>
-
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th style="width:70px">T/r</th>
-                <th>Mahsulot nomi</th>
-                <th style="width:120px">Narxi</th>
-                <th>Teglar</th>
-                <th style="width:110px">Rasm</th>
-                <th style="width:220px">Holat / Amallar</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <% if (products && products.length) { %>
-                <% products.forEach(function(p, idx){ %>
-                  <tr>
-                    <td class="muted"><%= idx + 1 %></td>
-
-                    <td>
-                      <div class="nameCell">
-                        <div class="nameMain"><%= p.productName %></div>
-                        <% if (p.productDesc) { %>
-                          <div class="nameSub"><%= p.productDesc %></div>
-                        <% } %>
-                      </div>
-                    </td>
-
-                    <td><span class="price"><%= p.productPrice %></span></td>
-
-                    <td>
-                      <% if (p.productTags && p.productTags.length) { %>
-                        <div class="tags">
-                          <% p.productTags.forEach(function(t){ %>
-                            <span class="tag"><%= (productTagLabels && productTagLabels[t]) ? productTagLabels[t] : t %></span>
-                          <% }) %>
-                        </div>
-                      <% } else { %>
-                        <span class="muted">-</span>
-                      <% } %>
-                    </td>
-
-                    <td>
-                      <% if (p.productImages && p.productImages.length) { %>
-                        <img class="thumb" src="/<%= p.productImages[0] %>" alt="Rasm"
-                          onerror="this.outerHTML='<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
-                      <% } else { %>
-                        <span class="muted">Rasm yo‘q</span>
-                      <% } %>
-                    </td>
-
-                    <td>
-                      <div class="row-actions">
-                        <select class="select new-product-status" id="<%= p._id %>">
-                          <option value="PAUSE" <%= p.productStatus === 'PAUSE' ? 'selected': '' %>>TO‘XTATILGAN</option>
-                          <option value="PROCESS" <%= p.productStatus === 'PROCESS' ? 'selected': '' %>>FAOL</option>
-                          <option value="DELETE" <%= p.productStatus === 'DELETE' ? 'selected': '' %>>O‘CHIRILGAN</option>
-                        </select>
-
-                        <button
-                          class="btn btn-ghost btn-sm"
-                          type="button"
-                          data-product="<%= encodeURIComponent(JSON.stringify(p)) %>"
-                          onclick="openEditFromBtn(this)"
-                          title="Tahrirlash"
-                        >
-                          ✏️
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                <% }) %>
-              <% } else { %>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
                 <tr>
-                  <td colspan="6" class="empty">Hozircha mahsulot yo‘q.</td>
+                  <th style="width:70px">T/r</th>
+                  <th>Mahsulot nomi</th>
+                  <th style="width:120px">Narxi</th>
+                  <th>Teglar</th>
+                  <th style="width:110px">Rasm</th>
+                  <th style="width:220px">Holat / Amallar</th>
                 </tr>
-              <% } %>
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
 
-      <!-- MOBILE CARDS (hozircha tegmaymiz) -->
-      <section class="mobile-only">
-        <% if (products && products.length) { %>
-          <div class="cards">
-            <% products.forEach(function(p, idx){ %>
-              <div class="pCard">
-                <div class="pCardTop">
-                  <div class="pCardTitle">
-                    <div class="pIdx">#<%= idx + 1 %></div>
-                    <div class="pName"><%= p.productName %></div>
-                  </div>
-                  <div class="pPrice"><%= p.productPrice %></div>
-                </div>
+              <tbody>
+                <% if (products && products.length) { %>
+                  <% products.forEach(function(p, idx){ %>
+                    <tr>
+                      <td class="muted">
+                        <%= idx + 1 %>
+                      </td>
 
-                <% if (p.productImages && p.productImages.length) { %>
-                  <img class="pImg" src="/<%= p.productImages[0] %>" alt="Rasm" onerror="this.style.display='none';" />
-                <% } %>
+                      <td>
+                        <div class="nameCell">
+                          <div class="nameMain">
+                            <%= p.productName %>
+                          </div>
+                          <% if (p.productDesc) { %>
+                            <div class="nameSub">
+                              <%= p.productDesc %>
+                            </div>
+                            <% } %>
+                        </div>
+                      </td>
 
-                <% if (p.productDesc) { %>
-                  <div class="pDesc"><%= p.productDesc %></div>
-                <% } %>
+                      <td><span class="price">
+                          <%= p.productPrice %>
+                        </span></td>
 
-                <% if (p.productTags && p.productTags.length) { %>
-                  <div class="tags">
-                    <% p.productTags.forEach(function(t){ %>
-                      <span class="tag"><%= (productTagLabels && productTagLabels[t]) ? productTagLabels[t] : t %></span>
+                      <td>
+                        <% if (p.productTags && p.productTags.length) { %>
+                          <div class="tags">
+                            <% p.productTags.forEach(function(t){ %>
+                              <span class="tag">
+                                <%= (productTagLabels && productTagLabels[t]) ? productTagLabels[t] : t %>
+                              </span>
+                              <% }) %>
+                          </div>
+                          <% } else { %>
+                            <span class="muted">-</span>
+                            <% } %>
+                      </td>
+
+                      <td>
+                        <% if (p.productImages && p.productImages.length) { %>
+                          <img class="thumb" src="/<%= p.productImages[0] %>" alt="Rasm"
+                            onerror="this.outerHTML='<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
+                          <% } else { %>
+                            <span class="muted">Rasm yo‘q</span>
+                            <% } %>
+                      </td>
+
+                      <td>
+                        <div class="row-actions">
+                          <select class="select new-product-status" id="<%= p._id %>">
+                            <option value="PAUSE" <%=p.productStatus==='PAUSE' ? 'selected' : '' %>>TO‘XTATILGAN
+                            </option>
+                            <option value="PROCESS" <%=p.productStatus==='PROCESS' ? 'selected' : '' %>>FAOL</option>
+                            <option value="DELETE" <%=p.productStatus==='DELETE' ? 'selected' : '' %>>O‘CHIRILGAN
+                            </option>
+                          </select>
+
+                          <button class="btn btn-ghost btn-sm" type="button"
+                            data-product="<%= encodeURIComponent(JSON.stringify(p)) %>" onclick="openEditFromBtn(this)"
+                            title="Tahrirlash">
+                            ✏️
+                          </button>
+                          <button class="btn btn-danger btn-sm" type="button"
+                            onclick="deleteProduct('<%= p._id %>', '<%= p.productName %>')" title="O‘chirish">
+                            🗑
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                     <% }) %>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="6" class="empty">Hozircha mahsulot yo‘q.</td>
+                        </tr>
+                        <% } %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- MOBILE CARDS (hozircha tegmaymiz) -->
+        <section class="mobile-only">
+          <% if (products && products.length) { %>
+            <div class="cards">
+              <% products.forEach(function(p, idx){ %>
+                <div class="pCard">
+                  <div class="pCardTop">
+                    <div class="pCardTitle">
+                      <div class="pIdx">#<%= idx + 1 %>
+                      </div>
+                      <div class="pName">
+                        <%= p.productName %>
+                      </div>
+                    </div>
+                    <div class="pPrice">
+                      <%= p.productPrice %>
+                    </div>
                   </div>
-                <% } %>
 
-                <div class="pActions">
-                  <label class="miniLabel">Holat</label>
-                  <select class="select new-product-status" id="<%= p._id %>">
-                    <option value="PAUSE" <%= p.productStatus === 'PAUSE' ? 'selected': '' %>>TO‘XTATILGAN</option>
-                    <option value="PROCESS" <%= p.productStatus === 'PROCESS' ? 'selected': '' %>>FAOL</option>
-                    <option value="DELETE" <%= p.productStatus === 'DELETE' ? 'selected': '' %>>O‘CHIRILGAN</option>
-                  </select>
+                  <% if (p.productImages && p.productImages.length) { %>
+                    <img class="pImg" src="/<%= p.productImages[0] %>" alt="Rasm"
+                      onerror="this.style.display='none';" />
+                    <% } %>
+
+                      <% if (p.productDesc) { %>
+                        <div class="pDesc">
+                          <%= p.productDesc %>
+                        </div>
+                        <% } %>
+
+                          <% if (p.productTags && p.productTags.length) { %>
+                            <div class="tags">
+                              <% p.productTags.forEach(function(t){ %>
+                                <span class="tag">
+                                  <%= (productTagLabels && productTagLabels[t]) ? productTagLabels[t] : t %>
+                                </span>
+                                <% }) %>
+                            </div>
+                            <% } %>
+
+                              <div class="pActions">
+                                <label class="miniLabel">Holat</label>
+                                <select class="select new-product-status" id="<%= p._id %>">
+                                  <option value="PAUSE" <%=p.productStatus==='PAUSE' ? 'selected' : '' %>>TO‘XTATILGAN
+                                  </option>
+                                  <option value="PROCESS" <%=p.productStatus==='PROCESS' ? 'selected' : '' %>>FAOL
+                                  </option>
+                                  <option value="DELETE" <%=p.productStatus==='DELETE' ? 'selected' : '' %>>O‘CHIRILGAN
+                                  </option>
+                                </select>
+                              </div>
                 </div>
+                <% }) %>
+            </div>
+            <% } else { %>
+              <div class="card">
+                <div class="empty">Hozircha mahsulot yo‘q.</div>
               </div>
-            <% }) %>
+              <% } %>
+        </section>
+
+        <!-- CREATE FORM -->
+        <section class="card create" id="createBox">
+          <div class="card-head">
+            <div class="card-title">Yangi mahsulot</div>
+            <button class="btn btn-ghost" id="closeCreateBtn" type="button">Yopish</button>
           </div>
-        <% } else { %>
-          <div class="card">
-            <div class="empty">Hozircha mahsulot yo‘q.</div>
-          </div>
-        <% } %>
-      </section>
 
-      <!-- CREATE FORM -->
-      <section class="card create" id="createBox">
-        <div class="card-head">
-          <div class="card-title">Yangi mahsulot</div>
-          <button class="btn btn-ghost" id="closeCreateBtn" type="button">Yopish</button>
-        </div>
+          <form onsubmit="return validateCreateForm()" action="/admin/product/create" method="POST"
+            enctype="multipart/form-data" class="form">
+            <input name="productStatus" value="PAUSE" hidden />
 
-        <form
-          onsubmit="return validateCreateForm()"
-          action="/admin/product/create"
-          method="POST"
-          enctype="multipart/form-data"
-          class="form"
-        >
-          <input name="productStatus" value="PAUSE" hidden />
+            <div class="grid2">
+              <div class="field">
+                <label>Mahsulot nomi</label>
+                <input name="productName" placeholder="Masalan: Collagen krem" required />
+              </div>
 
-          <div class="grid2">
-            <div class="field">
-              <label>Mahsulot nomi</label>
-              <input name="productName" placeholder="Masalan: Collagen krem" required />
+              <div class="field">
+                <label>Narxi</label>
+                <input type="number" name="productPrice" placeholder="Masalan: 75000" min="0" required />
+              </div>
             </div>
 
             <div class="field">
-              <label>Narxi</label>
-              <input type="number" name="productPrice" placeholder="Masalan: 75000" min="0" required />
+              <label>Teglar (bir nechta tanlash mumkin)</label>
+              <div class="tagsGrid">
+                <% (productTagsEnum || []).forEach(function(tag){ %>
+                  <label class="tagCheck">
+                    <input type="checkbox" name="productTags" value="<%= tag %>" />
+                    <span>
+                      <%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %>
+                    </span>
+                  </label>
+                  <% }) %>
+              </div>
             </div>
-          </div>
 
-          <div class="field">
-            <label>Teglar (bir nechta tanlash mumkin)</label>
-            <div class="tagsGrid">
-              <% (productTagsEnum || []).forEach(function(tag){ %>
-                <label class="tagCheck">
-                  <input type="checkbox" name="productTags" value="<%= tag %>" />
-                  <span><%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %></span>
-                </label>
-              <% }) %>
+            <div class="field">
+              <label>Tavsif</label>
+              <textarea name="productDesc" placeholder="Ixtiyoriy..."></textarea>
             </div>
-          </div>
 
-          <div class="field">
-            <label>Tavsif</label>
-            <textarea name="productDesc" placeholder="Ixtiyoriy..."></textarea>
-          </div>
-
-          <div class="field">
-            <label>Rasmlar (1-rasm majburiy)</label>
-            <div class="uploadRow">
-              <% for (let i=1; i<=5; i++) { %>
-                <div class="uploadBox">
-                  <img src="/img/upload.svg" id="image-section-<%= i %>" alt="upload" />
-                  <input
-                    type="file"
-                    name="productImages"
-                    <%= i === 1 ? 'required' : '' %>
+            <div class="field">
+              <label>Rasmlar (1-rasm majburiy)</label>
+              <div class="uploadRow">
+                <% for (let i=1; i<=5; i++) { %>
+                  <div class="uploadBox">
+                    <img src="/img/upload.svg" id="image-section-<%= i %>" alt="upload" />
+                    <input type="file" name="productImages" <%=i===1 ? 'required' : '' %>
                     accept="image/*"
                     onchange="previewFileHandler(this, <%= i %>)"
-                  />
-                </div>
-              <% } %>
+                      />
+                  </div>
+                  <% } %>
+              </div>
+              <div class="hint">Eslatma: birinchi rasm majburiy, qolganlari ixtiyoriy.</div>
             </div>
-            <div class="hint">Eslatma: birinchi rasm majburiy, qolganlari ixtiyoriy.</div>
+
+            <div class="formActions">
+              <button class="btn btn-danger" id="cancel-btn" type="button">Bekor qilish</button>
+              <button class="btn btn-primary" type="submit">Saqlash</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- EDIT MODAL (same page) -->
+        <section class="card create" id="editBox">
+          <div class="card-head">
+            <div class="card-title">Mahsulotni tahrirlash</div>
+            <button class="btn btn-ghost" id="closeEditBtn" type="button">Yopish</button>
           </div>
 
-          <div class="formActions">
-            <button class="btn btn-danger" id="cancel-btn" type="button">Bekor qilish</button>
-            <button class="btn btn-primary" type="submit">Saqlash</button>
-          </div>
-        </form>
-      </section>
+          <!-- Biz submitni JS bilan ushlab, axios multipart qilib yuboramiz (API JSON qaytaradi) -->
+          <form id="editForm" class="form" enctype="multipart/form-data">
+            <input type="hidden" name="productStatus" id="editStatus" value="PAUSE" />
 
-      <!-- EDIT MODAL (same page) -->
-      <section class="card create" id="editBox">
-        <div class="card-head">
-          <div class="card-title">Mahsulotni tahrirlash</div>
-          <button class="btn btn-ghost" id="closeEditBtn" type="button">Yopish</button>
-        </div>
+            <div class="grid2">
+              <div class="field">
+                <label>Mahsulot nomi</label>
+                <input name="productName" id="editName" required />
+              </div>
 
-        <!-- Biz submitni JS bilan ushlab, axios multipart qilib yuboramiz (API JSON qaytaradi) -->
-        <form id="editForm" class="form" enctype="multipart/form-data">
-          <input type="hidden" name="productStatus" id="editStatus" value="PAUSE" />
+              <div class="field">
+                <label>Narxi</label>
+                <input type="number" name="productPrice" id="editPrice" min="0" required />
+              </div>
+            </div>
 
-          <div class="grid2">
             <div class="field">
-              <label>Mahsulot nomi</label>
-              <input name="productName" id="editName" required />
+              <label>Teglar</label>
+              <div class="tagsGrid" id="editTagsGrid">
+                <% (productTagsEnum || []).forEach(function(tag){ %>
+                  <label class="tagCheck">
+                    <input type="checkbox" name="productTags" value="<%= tag %>" />
+                    <span>
+                      <%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %>
+                    </span>
+                  </label>
+                  <% }) %>
+              </div>
             </div>
 
             <div class="field">
-              <label>Narxi</label>
-              <input type="number" name="productPrice" id="editPrice" min="0" required />
+              <label>Tavsif</label>
+              <textarea name="productDesc" id="editDesc" placeholder="Ixtiyoriy..."></textarea>
             </div>
-          </div>
 
-          <div class="field">
-            <label>Teglar</label>
-            <div class="tagsGrid" id="editTagsGrid">
-              <% (productTagsEnum || []).forEach(function(tag){ %>
-                <label class="tagCheck">
-                  <input type="checkbox" name="productTags" value="<%= tag %>" />
-                  <span><%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %></span>
-                </label>
-              <% }) %>
+            <div class="field">
+              <label>Hozirgi rasmlar (ko‘rish uchun)</label>
+              <div class="existingRow" id="existingImages"></div>
+              <div class="hint">Eslatma: hozircha eski rasmlar avtomatik saqlanadi. Agar Siz yangi rasmlar tanlasangiz,
+                server tomonda qanday yozganingizga qarab yangilanadi.</div>
             </div>
-          </div>
 
-          <div class="field">
-            <label>Tavsif</label>
-            <textarea name="productDesc" id="editDesc" placeholder="Ixtiyoriy..."></textarea>
-          </div>
-
-          <div class="field">
-            <label>Hozirgi rasmlar (ko‘rish uchun)</label>
-            <div class="existingRow" id="existingImages"></div>
-            <div class="hint">Eslatma: hozircha eski rasmlar avtomatik saqlanadi. Agar Siz yangi rasmlar tanlasangiz, server tomonda qanday yozganingizga qarab yangilanadi.</div>
-          </div>
-
-          <div class="field">
-            <label>Yangi rasmlar (0–5 ta)</label>
-            <div class="uploadRow">
-              <% for (let i=1; i<=5; i++) { %>
-                <div class="uploadBox">
-                  <img src="/img/upload.svg" id="edit-image-<%= i %>" alt="upload" />
-                  <!-- MUHIM: update route multeri array("productImage",5) bo‘lgani uchun name=productImage -->
-                  <input
-                    type="file"
-                    name="productImage"
-                    accept="image/*"
-                    onchange="previewEditImage(this, <%= i %>)"
-                  />
-                </div>
-              <% } %>
+            <div class="field">
+              <label>Yangi rasmlar (0–5 ta)</label>
+              <div class="uploadRow">
+                <% for (let i=1; i<=5; i++) { %>
+                  <div class="uploadBox">
+                    <img src="/img/upload.svg" id="edit-image-<%= i %>" alt="upload" />
+                    <!-- MUHIM: update route multeri array("productImage",5) bo‘lgani uchun name=productImage -->
+                    <input type="file" name="productImage" accept="image/*"
+                      onchange="previewEditImage(this, <%= i %>)" />
+                  </div>
+                  <% } %>
+              </div>
             </div>
-          </div>
 
-          <div class="formActions">
-            <button class="btn btn-danger" id="cancelEditBtn" type="button">Bekor qilish</button>
-            <button class="btn btn-primary" type="submit">Yangilash</button>
-          </div>
-        </form>
-      </section>
-    </main>
-  </div>
+            <div class="formActions">
+              <button class="btn btn-danger" id="cancelEditBtn" type="button">Bekor qilish</button>
+              <button class="btn btn-primary" type="submit">Yangilash</button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
 
-  <script type="text/javascript" src="/js/products.js"></script>
+    <script type="text/javascript" src="/js/products.js"></script>
 
-  <!-- minimal responsive nav + create toggle (JS) -->
-  <script>
-    (function () {
-      const burgerBtn = document.getElementById('burgerBtn');
-      const drawer = document.getElementById('drawer');
-      const openCreateBtn = document.getElementById('openCreateBtn');
-      const closeCreateBtn = document.getElementById('closeCreateBtn');
-      const createBox = document.getElementById('createBox');
-      const cancelBtn = document.getElementById('cancel-btn');
+    <!-- minimal responsive nav + create toggle (JS) -->
+    <script>
+      (function () {
+        const burgerBtn = document.getElementById('burgerBtn');
+        const drawer = document.getElementById('drawer');
+        const openCreateBtn = document.getElementById('openCreateBtn');
+        const closeCreateBtn = document.getElementById('closeCreateBtn');
+        const createBox = document.getElementById('createBox');
+        const cancelBtn = document.getElementById('cancel-btn');
 
-      function toggleDrawer() {
-        drawer.classList.toggle('open');
-      }
-      function openCreate() {
-        createBox.classList.add('open');
-        createBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      function closeCreate() {
-        createBox.classList.remove('open');
-      }
+        function toggleDrawer() {
+          drawer.classList.toggle('open');
+        }
+        function openCreate() {
+          createBox.classList.add('open');
+          createBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function closeCreate() {
+          createBox.classList.remove('open');
+        }
 
-      if (burgerBtn) burgerBtn.addEventListener('click', toggleDrawer);
-      if (openCreateBtn) openCreateBtn.addEventListener('click', openCreate);
-      if (closeCreateBtn) closeCreateBtn.addEventListener('click', closeCreate);
-      if (cancelBtn) cancelBtn.addEventListener('click', closeCreate);
+        if (burgerBtn) burgerBtn.addEventListener('click', toggleDrawer);
+        if (openCreateBtn) openCreateBtn.addEventListener('click', openCreate);
+        if (closeCreateBtn) closeCreateBtn.addEventListener('click', closeCreate);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeCreate);
 
-      document.addEventListener('click', (e) => {
-        if (!drawer || !drawer.classList.contains('open')) return;
-        const t = e.target;
-        if (t === drawer || drawer.contains(t) || t === burgerBtn) return;
-        drawer.classList.remove('open');
-      });
-    })();
-  </script>
-</body>
+        document.addEventListener('click', (e) => {
+          if (!drawer || !drawer.classList.contains('open')) return;
+          const t = e.target;
+          if (t === drawer || drawer.contains(t) || t === burgerBtn) return;
+          drawer.classList.remove('open');
+        });
+      })();
+    </script>
+  </body>
 
-<%- include('includes/footer') %>
+  <%- include('includes/footer') %>

@@ -189,3 +189,21 @@ function previewEditImage(input, idx) {
 	};
 	reader.readAsDataURL(file);
 }
+
+async function deleteProduct(id, name) {
+	const ok = confirm(`"${name}" mahsulotini butunlay o‘chirmoqchimisiz?\nBu amal qaytarilmaydi!`);
+	if (!ok) return;
+
+	try {
+		const res = await axios.delete(`/admin/product/${id}`);
+		if (res.data && res.data.ok) {
+			alert('Mahsulot o‘chirildi');
+			window.location.reload();
+		} else {
+			alert('O‘chirishda xato!');
+		}
+	} catch (err) {
+		console.log(err);
+		alert('O‘chirishda xato!');
+	}
+}

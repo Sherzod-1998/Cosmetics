@@ -33,6 +33,11 @@ routerAdmin.post('/product/:id',
      makeUploader("products").array("productImage", 5),
      productController.updateChosenProduct);
 
+routerAdmin.delete(
+  '/product/:id',
+  sellerController.verifySeller,
+  productController.deleteProduct
+);
 // User
 routerAdmin.get(
     "/user/all", 

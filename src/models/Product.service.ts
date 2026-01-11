@@ -160,6 +160,13 @@ class ProductService {
 		if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
 		return result;
 	}
+	public async deleteProduct(id: string): Promise<void> {
+		id = shapeIntoMongooseObjectId(id);
+		const result = await this.productModel.findByIdAndDelete(id).exec();
+		if (!result) {
+			throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+		}
+	}
 }
 
 export default ProductService;
