@@ -75,22 +75,21 @@ function validateForm() {
 }
 
 function previewFileHandler(input, order) {
-	const imgClassName = input.className;
-	console.log('input:', input);
+  const file = input.files && input.files[0];
+  if (!file) return;
 
-	const file = $(`.${imgClassName}`).get(0).files[0];
-	const fileType = file['type'];
-	const validImageType = ['image/jpg', 'image/jpeg', 'image/png'];
+  const validImageType = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp'];
 
-	if (!validImageType.includes(fileType)) {
-		alert('Please insert only jpeg, jpg, and png!');
-	} else {
-		if (file) {
-			const reader = new FileReader();
-			reader.onload = function () {
-				$(`#image-section-${order}`).attr('src', reader.result);
-			};
-			reader.readAsDataURL(file);
-		}
-	}
+  if (!validImageType.includes(file.type)) {
+    alert("Faqat jpg, jpeg, png (va webp) rasm yuklang!");
+    input.value = ""; // noto‘g‘ri fayl bo‘lsa tozalab qo‘yadi
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function () {
+    const imgEl = document.getElementById(`image-section-${order}`);
+    if (imgEl) imgEl.src = reader.result;
+  };
+  reader.readAsDataURL(file);
 }

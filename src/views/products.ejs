@@ -1,215 +1,285 @@
 <%- include('includes/header') %>
+<link rel="stylesheet" type="text/css" href="/css/products.css" />
 
-  <link rel="stylesheet" type="text/css" href="/css/products.css" />
-
-  <body>
-    <div class="products-container">
-
-      <div class="navigation-menu">
-        <ul class="nav justify-content-center">
-          <li class="nav-item">
-            <a class="nav-link active" href="/admin/">Bosh sahifa</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/admin/product/all">Mahsulotlar</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/admin/user/all">Foydalanuvchilar</a>
-          </li>
-          <li class="nav-item" onclick="return confirm('Rostdan ham chiqmoqchimisiz?')">
-            <a class="nav-link" href="/admin/logout">Chiqish</a>
-          </li>
-        </ul>
+<body>
+  <div class="page">
+    <!-- TOP NAV -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">N</div>
+        <div class="brand-txt">
+          <div class="brand-title">Admin panel</div>
+          <div class="brand-sub">Mahsulotlar boshqaruvi</div>
+        </div>
       </div>
 
-      <div class="restaurant-menu-frame">
-        <div class="board">
+      <nav class="navlinks">
+        <a class="navlink" href="/admin/">Bosh sahifa</a>
+        <a class="navlink active" href="/admin/product/all">Mahsulotlar</a>
+        <a class="navlink" href="/admin/user/all">Foydalanuvchilar</a>
+        <a class="navlink danger" href="/admin/logout" onclick="return confirm('Rostdan ham chiqmoqchimisiz?')">Chiqish</a>
+      </nav>
 
-          <!-- RO‘YXAT -->
-          <div class="dishes-table">
-            <span class="new-dish-txt table-title">MAHSULOTLAR RO‘YXATI</span>
+      <button class="burger" id="burgerBtn" type="button" aria-label="Menu">☰</button>
+    </header>
 
-            <table class="table table-bordered table-hover">
-              <thead class="thead-light">
-                <tr class="thead-light">
-                  <th scope="col">T/r</th>
-                  <th scope="col">Mahsulot nomi</th>
-                  <th scope="col">Narxi</th>
-                  <th scope="col">Teglar</th>
-                  <th scope="col">Rasm</th>
-                  <th scope="col">Holat</th>
-                </tr>
-              </thead>
+    <!-- MOBILE DRAWER NAV -->
+    <div class="drawer" id="drawer">
+      <a class="drawer-link" href="/admin/">Bosh sahifa</a>
+      <a class="drawer-link active" href="/admin/product/all">Mahsulotlar</a>
+      <a class="drawer-link" href="/admin/user/all">Foydalanuvchilar</a>
+      <a class="drawer-link danger" href="/admin/logout" onclick="return confirm('Rostdan ham chiqmoqchimisiz?')">Chiqish</a>
+    </div>
 
+    <main class="container">
+      <!-- HEADER ACTIONS -->
+      <section class="hero">
+        <div>
+          <h1>Mahsulotlar</h1>
+          <p>Mahsulot qo‘shing, teglar belgilang, holatini boshqaring.</p>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="openCreateBtn" type="button">+ Yangi mahsulot</button>
+        </div>
+      </section>
+
+      <!-- DESKTOP TABLE -->
+      <section class="card desktop-only">
+        <div class="card-head">
+          <div class="card-title">Ro‘yxat</div>
+          <div class="card-note"><%= products?.length || 0 %> ta mahsulot</div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width:70px">T/r</th>
+                <th>Mahsulot nomi</th>
+                <th style="width:120px">Narxi</th>
+                <th>Teglar</th>
+                <th style="width:110px">Rasm</th>
+                <th style="width:160px">Holat</th>
+              </tr>
+            </thead>
+
+            <tbody>
               <% if (products && products.length) { %>
-                <% products.map(function (value, key) { %>
-                  <tbody class="table-body">
-                    <tr>
-                      <td>
-                        <%= key + 1 %>
-                      </td>
+                <% products.forEach(function(p, idx){ %>
+                  <tr>
+                    <td class="muted"><%= idx + 1 %></td>
 
-                      <td class="text-left">
-                        <div class="product-name-cell">
-                          <strong>
-                            <%= value.productName %>
-                          </strong>
-                          <% if (value.productDesc) { %>
-                            <div class="muted-desc">
-                              <%= value.productDesc %>
-                            </div>
-                            <% } %>
+                    <td>
+                      <div class="nameCell">
+                        <div class="nameMain"><%= p.productName %></div>
+                        <% if (p.productDesc) { %>
+                          <div class="nameSub"><%= p.productDesc %></div>
+                        <% } %>
+                      </div>
+                    </td>
+
+                    <td><span class="price"><%= p.productPrice %></span></td>
+
+                    <td>
+                      <% if (p.productTags && p.productTags.length) { %>
+                        <div class="tags">
+                          <% p.productTags.forEach(function(t){ %>
+                            <span class="tag"><%= (productTagLabels && productTagLabels[t]) ? productTagLabels[t] : t %></span>
+                          <% }) %>
                         </div>
-                      </td>
-
-                      <td>
-                        <%= value.productPrice %>
-                      </td>
-
-                      <td class="text-left">
-                        <% if (value.productTags && value.productTags.length) { %>
-                          <div class="tags-wrap">
-                            <% value.productTags.forEach(function(tag){ %>
-                              <span class="tag-pill">
-                                <%= productTagLabels[tag] %>
-                              </span>
-                              <% }) %>
-                          </div>
-                          <% } else { %>
-                            <span class="muted">-</span>
-                            <% } %>
-                      </td>
-
-
-                      <td>
-                        <% if (value.productImages && value.productImages.length> 0) { %>
-                          <img src="/<%= value.productImages[0] %>" alt="Mahsulot rasmi" class="thumb"
-                            onerror="this.outerHTML = '<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
-                          <% } else { %>
-                            <span class="muted">Rasm yo‘q</span>
-                            <% } %>
-                      </td>
-
-                      <td>
-                        <select class="spec-select new-product-status" id="<%= value._id %>">
-                          <option value="PAUSE" <%=value.productStatus==='PAUSE' ? 'selected' : '' %>>TO‘XTATILGAN
-                          </option>
-                          <option value="PROCESS" <%=value.productStatus==='PROCESS' ? 'selected' : '' %>>FAOL</option>
-                          <option value="DELETE" <%=value.productStatus==='DELETE' ? 'selected' : '' %>>O‘CHIRILGAN
-                          </option>
-                        </select>
-                      </td>
-                    </tr>
-                  </tbody>
-                  <% }); %>
-                    <% } else { %>
-                      <tbody class="table-body">
-                        <tr>
-                          <td colspan="6" class="empty-state">Hozircha mahsulot yo‘q.</td>
-                        </tr>
-                      </tbody>
+                      <% } else { %>
+                        <span class="muted">-</span>
                       <% } %>
-            </table>
+                    </td>
 
-            <div class="long-input actions-row">
-              <button class="btn btn-primary" id="process-btn" type="button">
-                Yangi mahsulot qo‘shish
-              </button>
+                    <td>
+                      <% if (p.productImages && p.productImages.length) { %>
+                        <img class="thumb" src="/<%= p.productImages[0] %>" alt="Rasm"
+                             onerror="this.outerHTML='<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
+                      <% } else { %>
+                        <span class="muted">Rasm yo‘q</span>
+                      <% } %>
+                    </td>
+
+                    <td>
+                      <select class="select new-product-status" id="<%= p._id %>">
+                        <option value="PAUSE" <%= p.productStatus === 'PAUSE' ? 'selected': '' %>>TO‘XTATILGAN</option>
+                        <option value="PROCESS" <%= p.productStatus === 'PROCESS' ? 'selected': '' %>>FAOL</option>
+                        <option value="DELETE" <%= p.productStatus === 'DELETE' ? 'selected': '' %>>O‘CHIRILGAN</option>
+                      </select>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="empty">Hozircha mahsulot yo‘q.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- MOBILE CARDS -->
+      <section class="mobile-only">
+        <% if (products && products.length) { %>
+          <div class="cards">
+            <% products.forEach(function(p, idx){ %>
+              <div class="pCard">
+                <div class="pCardTop">
+                  <div class="pCardTitle">
+                    <div class="pIdx">#<%= idx + 1 %></div>
+                    <div class="pName"><%= p.productName %></div>
+                  </div>
+                  <div class="pPrice"><%= p.productPrice %></div>
+                </div>
+
+                <% if (p.productImages && p.productImages.length) { %>
+                  <img class="pImg" src="/<%= p.productImages[0] %>" alt="Rasm"
+                       onerror="this.style.display='none';" />
+                <% } %>
+
+                <% if (p.productDesc) { %>
+                  <div class="pDesc"><%= p.productDesc %></div>
+                <% } %>
+
+                <% if (p.productTags && p.productTags.length) { %>
+                  <div class="tags">
+                    <% p.productTags.forEach(function(t){ %>
+                      <span class="tag"><%= (productTagLabels && productTagLabels[t]) ? productTagLabels[t] : t %></span>
+                    <% }) %>
+                  </div>
+                <% } %>
+
+                <div class="pActions">
+                  <label class="miniLabel">Holat</label>
+                  <select class="select new-product-status" id="<%= p._id %>">
+                    <option value="PAUSE" <%= p.productStatus === 'PAUSE' ? 'selected': '' %>>TO‘XTATILGAN</option>
+                    <option value="PROCESS" <%= p.productStatus === 'PROCESS' ? 'selected': '' %>>FAOL</option>
+                    <option value="DELETE" <%= p.productStatus === 'DELETE' ? 'selected': '' %>>O‘CHIRILGAN</option>
+                  </select>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="card">
+            <div class="empty">Hozircha mahsulot yo‘q.</div>
+          </div>
+        <% } %>
+      </section>
+
+      <!-- CREATE FORM -->
+      <section class="card create" id="createBox">
+        <div class="card-head">
+          <div class="card-title">Yangi mahsulot</div>
+          <button class="btn btn-ghost" id="closeCreateBtn" type="button">Yopish</button>
+        </div>
+
+        <form
+          onsubmit="return validateForm()"
+          action="/admin/product/create"
+          method="POST"
+          enctype="multipart/form-data"
+          class="form"
+        >
+          <input name="productStatus" value="PAUSE" hidden />
+
+          <div class="grid2">
+            <div class="field">
+              <label>Mahsulot nomi</label>
+              <input name="productName" placeholder="Masalan: Collagen krem" required />
+            </div>
+
+            <div class="field">
+              <label>Narxi</label>
+              <input type="number" name="productPrice" placeholder="Masalan: 75000" min="0" required />
             </div>
           </div>
 
-          <!-- CREATE FORM -->
-          <form onsubmit="return validateForm()" action="/admin/product/create" method="POST" class="dish-container"
-            enctype="multipart/form-data">
-            <div class="long-input form-title-row">
-              <span class="new-dish-txt">YANGI MAHSULOT MA’LUMOTLARI</span>
+          <div class="field">
+            <label>Teglar (bir nechta tanlash mumkin)</label>
+            <div class="tagsGrid">
+              <% (productTagsEnum || []).forEach(function(tag){ %>
+                <label class="tagCheck">
+                  <input type="checkbox" name="productTags" value="<%= tag %>" />
+                  <span><%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %></span>
+                </label>
+              <% }) %>
             </div>
+          </div>
 
-            <input name="productStatus" value="PAUSE" class="product-status" hidden />
+          <div class="field">
+            <label>Tavsif</label>
+            <textarea name="productDesc" placeholder="Ixtiyoriy..."></textarea>
+          </div>
 
-            <div class="long-input">
-              <label>Mahsulot nomi</label>
-              <input type="text" placeholder="Masalan: Collagen krem" name="productName" class="product-name"
-                required />
-            </div>
-
-            <div class="long-input">
-              <label>Narxi</label>
-              <input type="number" placeholder="Masalan: 120000" name="productPrice" class="product-price" required
-                min="0" />
-            </div>
-
-            <div class="long-input">
-              <label>Teglar (bir nechta tanlash mumkin)</label>
-              <div class="tags-grid">
-                <% productTagsEnum.forEach(function(tag){ %>
-                  <label class="tag-check">
-                    <input type="checkbox" name="productTags" value="<%= tag %>" />
-                    <span>
-                      <%= productTagLabels[tag] %>
-                    </span>
-                  </label>
-                  <% }) %>
-              </div>
-
-            </div>
-
-            <div class="long-input">
-              <label>Mahsulot tavsifi</label>
-              <textarea name="productDesc" class="product-desc" placeholder="Ixtiyoriy..."></textarea>
-            </div>
-
-            <div class="img-frame">
-              <label>Mahsulot rasmlari</label>
-
-              <div class="media-frame">
-                <div class="upload-img-box">
-                  <img src="/img/upload.svg" class="1" id="image-section-1" />
-                  <input type="file" id="file" name="productImages" class="image-one" required
-                    onchange="previewFileHandler(this, 1)" />
+          <div class="field">
+            <label>Rasmlar (1-rasm majburiy)</label>
+            <div class="uploadRow">
+              <% for (let i=1; i<=5; i++) { %>
+                <div class="uploadBox">
+                  <img src="/img/upload.svg" id="image-section-<%= i %>" alt="upload" />
+                  <input
+                    type="file"
+                    name="productImages"
+                    <%= i === 1 ? 'required' : '' %>
+                    onchange="previewFileHandler(this, <%= i %>)"
+                  />
                 </div>
-
-                <div class="upload-img-box">
-                  <img src="/img/upload.svg" class="2" id="image-section-2" />
-                  <input type="file" id="file" name="productImages" class="image-two"
-                    onchange="previewFileHandler(this, 2)" />
-                </div>
-
-                <div class="upload-img-box">
-                  <img src="/img/upload.svg" class="3" id="image-section-3" />
-                  <input type="file" id="file" name="productImages" class="image-three"
-                    onchange="previewFileHandler(this, 3)" />
-                </div>
-
-                <div class="upload-img-box">
-                  <img src="/img/upload.svg" class="4" id="image-section-4" />
-                  <input type="file" id="file" name="productImages" class="image-four"
-                    onchange="previewFileHandler(this, 4)" />
-                </div>
-
-                <div class="upload-img-box">
-                  <img src="/img/upload.svg" class="5" id="image-section-5" />
-                  <input type="file" id="file" name="productImages" class="image-five"
-                    onchange="previewFileHandler(this, 5)" />
-                </div>
-              </div>
-
-              <div class="hint">
-                Eslatma: 1-rasm majburiy, qolganlari ixtiyoriy.
-              </div>
+              <% } %>
             </div>
+            <div class="hint">Eslatma: birinchi rasm majburiy, qolganlari ixtiyoriy.</div>
+          </div>
 
-            <div class="operation-buttons">
-              <button class="btn btn-danger" id="cancel-btn" type="button">Bekor qilish</button>
-              <button type="submit" class="btn btn-primary" id="create-btn">Saqlash</button>
-            </div>
-          </form>
+          <div class="formActions">
+            <button class="btn btn-danger" id="cancel-btn" type="button">Bekor qilish</button>
+            <button class="btn btn-primary" type="submit">Saqlash</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
 
-        </div>
-      </div>
-    </div>
+  <script type="text/javascript" src="/js/products.js"></script>
 
-    <script type="text/javascript" src="/js/products.js"></script>
-  </body>
+  <!-- minimal responsive nav + create toggle (JS) -->
+  <script>
+    (function () {
+      const burgerBtn = document.getElementById('burgerBtn');
+      const drawer = document.getElementById('drawer');
+      const openCreateBtn = document.getElementById('openCreateBtn');
+      const closeCreateBtn = document.getElementById('closeCreateBtn');
+      const createBox = document.getElementById('createBox');
+      const cancelBtn = document.getElementById('cancel-btn');
 
-  <%- include('includes/footer') %>
+      function toggleDrawer() {
+        drawer.classList.toggle('open');
+      }
+      function openCreate() {
+        createBox.classList.add('open');
+        // mobile’da formga scroll
+        createBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      function closeCreate() {
+        createBox.classList.remove('open');
+      }
+
+      if (burgerBtn) burgerBtn.addEventListener('click', toggleDrawer);
+      if (openCreateBtn) openCreateBtn.addEventListener('click', openCreate);
+      if (closeCreateBtn) closeCreateBtn.addEventListener('click', closeCreate);
+      if (cancelBtn) cancelBtn.addEventListener('click', closeCreate);
+
+      // tashqariga bossangiz drawer yopilsin
+      document.addEventListener('click', (e) => {
+        if (!drawer || !drawer.classList.contains('open')) return;
+        const t = e.target;
+        if (t === drawer || drawer.contains(t) || t === burgerBtn) return;
+        drawer.classList.remove('open');
+      });
+    })();
+  </script>
+</body>
+
+<%- include('includes/footer') %>
