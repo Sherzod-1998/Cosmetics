@@ -1,0 +1,33 @@
+<head>
+  <title>Nonik</title>
+  <link rel="icon" type="image/png" href="/img/fav.png" />
+</head>
+<body>
+  <div class="home-container">
+    <!-- Navigation Menu -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">Discover Your Beauty</h1>
+        <p class="hero-description">Premium cosmetics for every style and skin. Shine naturally, feel confidently.</p>
+        <a href="/admin" class="hero-button">Home</a>
+        <% if(!member) { %>
+          <a class="hero-button" href="/admin/signup">Signup</a>
+          <a class="hero-button" href="/admin/login">Login</a>
+        <% } else { %>
+          <a class="hero-button" href="/admin/product/all">Menu</a>
+          <a class="hero-button" href="/admin/user/all">Users</a>
+        <a class="hero-button" href="/admin/logout" style="cursor: pointer" onclick="return confirm('Do you want to logout?')">
+  Logout
+</a>
+
+        <% } %>
+      </div>
+    </section>
+    <!-- Hero Section END -->
+  </div>
+
+  <script type="text/javascript" src="/js/home.js"></script>
+</body>
+<link rel="stylesheet" type="text/css" href="/css/home.css" />
+
+<%- include('includes/footer') %>
