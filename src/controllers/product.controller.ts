@@ -4,7 +4,7 @@ import { T } from '../libs/types/common';
 import ProductService from '../models/Product.service';
 import { AdminRequest, ExtendedRequest } from '../libs/types/member';
 import { ProductInput, ProductInquiry } from '../libs/types/product';
-import { ProductCollection, ProductTag } from '../libs/enums/product.enum';
+import { ProductCollection, ProductStatus, ProductTag } from '../libs/enums/product.enum';
 import { PRODUCT_TAG_LABELS } from '../libs/constants/productTagLabels';
 
 const productService = new ProductService();
@@ -72,11 +72,22 @@ productController.getProduct = async (req: ExtendedRequest, res: Response) => {
 productController.getAllProducts = async (req: Request, res: Response) => {
 	try {
 		console.log('getAllProducts');
-		const data = await productService.getAllProducts();
+
+		const q = (req.query.q as string) || '';
+		const tag = (req.query.tag as string) || 'ALL';
+		const status = (req.query.status as string) || 'ALL';
+		const sort = (req.query.sort as string) || 'newest';
+
+		const data = await productService.getAllProducts({ q, tag, status, sort });
 
 		res.render('products', {
 			products: data,
+
+			// EJS formda qiymatlarni saqlab turish uchun
+			filters: { q, tag, status, sort },
+
 			productTagsEnum: Object.values(ProductTag),
+			productStatusEnum: Object.values(ProductStatus),
 			productTagLabels: PRODUCT_TAG_LABELS,
 		});
 	} catch (err) {

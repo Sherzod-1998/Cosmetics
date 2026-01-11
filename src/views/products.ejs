@@ -22,6 +22,7 @@
 
       <button class="burger" id="burgerBtn" type="button" aria-label="Menu">☰</button>
     </header>
+    
 
     <!-- MOBILE DRAWER NAV -->
     <div class="drawer" id="drawer">
@@ -32,6 +33,7 @@
     </div>
 
     <main class="container">
+      
       <!-- HEADER ACTIONS -->
       <section class="hero">
         <div>
@@ -43,6 +45,56 @@
           <button class="btn btn-primary" id="openCreateBtn" type="button">+ Yangi mahsulot</button>
         </div>
       </section>
+      <section class="card desktop-only">
+  <form class="filterform" method="GET" action="/admin/product/all">
+    <div class="fgroup">
+      <label>Qidirish</label>
+      <input class="finput" type="text" name="q" value="<%= filters?.q || '' %>" placeholder="Masalan: Cledbel" />
+    </div>
+
+    <div class="fgroup">
+      <label>Teg</label>
+      <select class="fselect" name="tag">
+        <option value="ALL" <%= (filters?.tag==='ALL')?'selected':'' %>>Barchasi</option>
+        <% (productTagsEnum || []).forEach(function(t){ %>
+          <option value="<%= t %>" <%= (filters?.tag===t)?'selected':'' %>><%= productTagLabels?.[t] || t %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="fgroup">
+      <label>Holat</label>
+      <select class="fselect" name="status">
+        <option value="ALL" <%= (filters?.status==='ALL')?'selected':'' %>>Barchasi</option>
+        <% (productStatusEnum || []).forEach(function(s){ %>
+          <option value="<%= s %>" <%= (filters?.status===s)?'selected':'' %>>
+            <%= s === 'PAUSE' ? "TO‘XTATILGAN" : (s === 'PROCESS' ? 'FAOL' : 'O‘CHIRILGAN') %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="fgroup">
+      <label>Saralash</label>
+      <select class="fselect" name="sort">
+        <option value="newest" <%= (filters?.sort==='newest')?'selected':'' %>>Eng yangi</option>
+        <option value="oldest" <%= (filters?.sort==='oldest')?'selected':'' %>>Eng eski</option>
+        <option value="price_asc" <%= (filters?.sort==='price_asc')?'selected':'' %>>Narx (↑)</option>
+        <option value="price_desc" <%= (filters?.sort==='price_desc')?'selected':'' %>>Narx (↓)</option>
+        <option value="name_asc" <%= (filters?.sort==='name_asc')?'selected':'' %>>Nom (A→Z)</option>
+        <option value="name_desc" <%= (filters?.sort==='name_desc')?'selected':'' %>>Nom (Z→A)</option>
+      </select>
+    </div>
+
+    <div class="factions">
+      <button class="btn btn-primary" type="submit">Qo‘llash</button>
+      <a class="btn btn-ghost" href="/admin/product/all">Tozalash</a>
+    </div>
+  </form>
+</section>
+
+
+      
 
       <!-- DESKTOP TABLE -->
       <section class="card desktop-only">

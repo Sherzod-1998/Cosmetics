@@ -103,11 +103,56 @@ class ProductService {
 		}
 	}
 
-	public async getAllProducts(): Promise<Product[]> {
-		const result = await this.productModel.find().exec();
+	public async getAllProducts(query?: {
+		q?: string;
+		tag?: string;
+		status?: string;
+		sort?: string;
+	}): Promise<Product[]> {
+		const filter: any = {};
+
+		// Search by name
+		if (query?.q && query.q.trim()) {
+			filter.productName = { $regex: query.q.trim(), $options: 'i' };
+		}
+
+		// Filter by tag (array ichida bor bo‘lsa match)
+		if (query?.tag && query.tag !== 'ALL') {
+			filter.productTags = query.tag;
+		}
+
+		// Filter by status
+		if (query?.status && query.status !== 'ALL') {
+			filter.productStatus = query.status;
+		}
+
+		// Sort
+		let sortObj: any = { createdAt: -1 };
+		switch (query?.sort) {
+			case 'oldest':
+				sortObj = { createdAt: 1 };
+				break;
+			case 'price_asc':
+				sortObj = { productPrice: 1, createdAt: -1 };
+				break;
+			case 'price_desc':
+				sortObj = { productPrice: -1, createdAt: -1 };
+				break;
+			case 'name_asc':
+				sortObj = { productName: 1, createdAt: -1 };
+				break;
+			case 'name_desc':
+				sortObj = { productName: -1, createdAt: -1 };
+				break;
+			default:
+				sortObj = { createdAt: -1 };
+		}
+
+		const result = await this.productModel.find(filter).sort(sortObj).exec();
 		if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 		return result;
 	}
+
 	public async updateChosenProduct(id: string, input: ProductUpdateInput): Promise<Product> {
 		// string => objectId
 		id = shapeIntoMongooseObjectId(id);

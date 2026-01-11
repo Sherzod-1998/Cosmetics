@@ -480,6 +480,24 @@ a {
 	display: none;
 }
 
+.filterform{
+  display:grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr auto;
+  gap:12px;
+  align-items:end;
+}
+.fgroup label{display:block;font-size:12px;color:var(--muted2);margin-bottom:8px}
+.finput,.fselect{
+  width:100%;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  padding:12px 12px;
+}
+.factions{display:flex;gap:10px;justify-content:flex-end}
+
+
 @media (max-width: 980px) {
 	.navlinks {
 		display: none;
