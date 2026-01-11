@@ -1,49 +1,38 @@
 import mongoose, { Schema } from 'mongoose';
-import { BrandCollection, ProductCollection, ProductStatus } from '../libs/enums/product.enum';
+import { ProductCollection, ProductStatus, ProductTag } from '../libs/enums/product.enum';
 
 const productSchema = new Schema(
 	{
 		productStatus: {
 			type: String,
-			enum: ProductStatus,
+			enum: Object.values(ProductStatus),
 			default: ProductStatus.PAUSE,
-		},
-		brandCollection: {
-			type: String,
-			enum: BrandCollection,
 		},
 
 		productCollection: {
 			type: String,
-			enum: ProductCollection,
-			required: true,
+			enum: Object.values(ProductCollection),
+			required: false,
 		},
 
-		productName: {
-			type: String,
-			required: true,
+		// ✅ YANGI: multi-select tags
+		productTags: {
+			type: [String],
+			enum: Object.values(ProductTag),
+			default: [],
+			index: true,
 		},
 
-		productPrice: {
-			type: Number,
-			required: true,
-		},
+		productName: { type: String, required: true },
+		productPrice: { type: Number, required: true },
+		productDesc: { type: String },
 
-		productLeftCount: {
-			type: Number,
-			required: true,
-		},
-		productDesc: {
-			type: String,
-		},
 		productImages: {
 			type: [String],
 			default: [],
 		},
-		productViews: {
-			type: Number,
-			default: 0,
-		},
+
+		productViews: { type: Number, default: 0 },
 	},
 	{ timestamps: true },
 );

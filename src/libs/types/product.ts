@@ -1,4 +1,4 @@
-import { ProductStatus, ProductCollection, BrandCollection } from '../enums/product.enum';
+import { ProductStatus, ProductCollection } from '../enums/product.enum';
 import { Types } from 'mongoose';
 type ObjectId = Types.ObjectId;
 
@@ -6,7 +6,6 @@ export interface Product {
 	_id: ObjectId;
 	productStatus: ProductStatus;
 	productCollection: ProductCollection;
-	brandCollection: BrandCollection;
 	productName: string;
 	productPrice: number;
 	productLeftCount: number;
@@ -26,22 +25,19 @@ export interface ProductInquiry {
 }
 
 export interface ProductInput {
-	productStatus?: ProductStatus;
-	productCollection: ProductCollection;
-	brandCollection: BrandCollection;
+	productStatus: string;
+	productCollection: string;
 	productName: string;
 	productPrice: number;
-	productLeftCount: number;
 	productDesc?: string;
-	productImages?: string[];
-	productViews?: number;
+	productImages: string[];
+	productTags?: string[];
 }
 
 export interface ProductUpdateInput {
 	_id: ObjectId;
 	productStatus: ProductStatus;
 	productCollection: ProductCollection;
-	brandCollection: BrandCollection;
 	productName: string;
 	productPrice: number;
 	productLeftCount: number;

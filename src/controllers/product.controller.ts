@@ -4,7 +4,8 @@ import { T } from '../libs/types/common';
 import ProductService from '../models/Product.service';
 import { AdminRequest, ExtendedRequest } from '../libs/types/member';
 import { ProductInput, ProductInquiry } from '../libs/types/product';
-import { ProductCollection } from '../libs/enums/product.enum';
+import { ProductCollection, ProductTag } from '../libs/enums/product.enum';
+import { PRODUCT_TAG_LABELS } from '../libs/constants/productTagLabels';
 
 const productService = new ProductService();
 
@@ -72,7 +73,12 @@ productController.getAllProducts = async (req: Request, res: Response) => {
 	try {
 		console.log('getAllProducts');
 		const data = await productService.getAllProducts();
-		res.render('products', { products: data });
+
+		res.render('products', {
+			products: data,
+			productTagsEnum: Object.values(ProductTag),
+			productTagLabels: PRODUCT_TAG_LABELS,
+		});
 	} catch (err) {
 		console.log('Error getAllProducts', err);
 		if (err instanceof Errors) {
@@ -106,9 +112,19 @@ productController.createNewProduct = async (req: AdminRequest, res: Response) =>
 		}
 
 		const data: ProductInput = req.body;
+
+		// ✅ 1) images
 		data.productImages = req.files.map((ele) => ele.path.replace(/\\/g, '/'));
 
+		// ✅ 2) tags (checkbox normalize)
+		const tagsRaw = (req.body as any).productTags;
+		data.productTags = Array.isArray(tagsRaw) ? tagsRaw : tagsRaw ? [tagsRaw] : [];
+
+		// ✅ 3) number fields (ba'zan string bo'lib keladi)
+		data.productPrice = Number((req.body as any).productPrice);
+
 		await productService.createNewProduct(data);
+
 		res.send(`<script> alert("Successful creation!"); window.location.replace('/admin/product/all') </script>`);
 	} catch (err) {
 		console.log('Error createNewProducts', err);
