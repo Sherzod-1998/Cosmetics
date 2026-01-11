@@ -22,7 +22,6 @@
 
       <button class="burger" id="burgerBtn" type="button" aria-label="Menu">☰</button>
     </header>
-    
 
     <!-- MOBILE DRAWER NAV -->
     <div class="drawer" id="drawer">
@@ -33,68 +32,66 @@
     </div>
 
     <main class="container">
-      
       <!-- HEADER ACTIONS -->
       <section class="hero">
         <div>
           <h1>Mahsulotlar</h1>
-          <p>Mahsulot qo‘shing, teglar belgilang, holatini boshqaring.</p>
+          <p>Mahsulot qo‘shing, tahrir qiling, teglar belgilang, holatini boshqaring.</p>
         </div>
 
         <div class="hero-actions">
           <button class="btn btn-primary" id="openCreateBtn" type="button">+ Yangi mahsulot</button>
         </div>
       </section>
+
+      <!-- FILTER BAR (PC) -->
       <section class="card desktop-only">
-  <form class="filterform" method="GET" action="/admin/product/all">
-    <div class="fgroup">
-      <label>Qidirish</label>
-      <input class="finput" type="text" name="q" value="<%= filters?.q || '' %>" placeholder="Masalan: Cledbel" />
-    </div>
+        <form class="filterform" method="GET" action="/admin/product/all">
+          <div class="fgroup">
+            <label>Qidirish</label>
+            <input class="finput" type="text" name="q" value="<%= filters?.q || '' %>" placeholder="Masalan: Cledbel" />
+          </div>
 
-    <div class="fgroup">
-      <label>Teg</label>
-      <select class="fselect" name="tag">
-        <option value="ALL" <%= (filters?.tag==='ALL')?'selected':'' %>>Barchasi</option>
-        <% (productTagsEnum || []).forEach(function(t){ %>
-          <option value="<%= t %>" <%= (filters?.tag===t)?'selected':'' %>><%= productTagLabels?.[t] || t %></option>
-        <% }) %>
-      </select>
-    </div>
+          <div class="fgroup">
+            <label>Teg</label>
+            <select class="fselect" name="tag">
+              <option value="ALL" <%= (filters?.tag==='ALL')?'selected':'' %>>Barchasi</option>
+              <% (productTagsEnum || []).forEach(function(t){ %>
+                <option value="<%= t %>" <%= (filters?.tag===t)?'selected':'' %>><%= productTagLabels?.[t] || t %></option>
+              <% }) %>
+            </select>
+          </div>
 
-    <div class="fgroup">
-      <label>Holat</label>
-      <select class="fselect" name="status">
-        <option value="ALL" <%= (filters?.status==='ALL')?'selected':'' %>>Barchasi</option>
-        <% (productStatusEnum || []).forEach(function(s){ %>
-          <option value="<%= s %>" <%= (filters?.status===s)?'selected':'' %>>
-            <%= s === 'PAUSE' ? "TO‘XTATILGAN" : (s === 'PROCESS' ? 'FAOL' : 'O‘CHIRILGAN') %>
-          </option>
-        <% }) %>
-      </select>
-    </div>
+          <div class="fgroup">
+            <label>Holat</label>
+            <select class="fselect" name="status">
+              <option value="ALL" <%= (filters?.status==='ALL')?'selected':'' %>>Barchasi</option>
+              <% (productStatusEnum || []).forEach(function(s){ %>
+                <option value="<%= s %>" <%= (filters?.status===s)?'selected':'' %>>
+                  <%= s === 'PAUSE' ? "TO‘XTATILGAN" : (s === 'PROCESS' ? 'FAOL' : 'O‘CHIRILGAN') %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
 
-    <div class="fgroup">
-      <label>Saralash</label>
-      <select class="fselect" name="sort">
-        <option value="newest" <%= (filters?.sort==='newest')?'selected':'' %>>Eng yangi</option>
-        <option value="oldest" <%= (filters?.sort==='oldest')?'selected':'' %>>Eng eski</option>
-        <option value="price_asc" <%= (filters?.sort==='price_asc')?'selected':'' %>>Narx (↑)</option>
-        <option value="price_desc" <%= (filters?.sort==='price_desc')?'selected':'' %>>Narx (↓)</option>
-        <option value="name_asc" <%= (filters?.sort==='name_asc')?'selected':'' %>>Nom (A→Z)</option>
-        <option value="name_desc" <%= (filters?.sort==='name_desc')?'selected':'' %>>Nom (Z→A)</option>
-      </select>
-    </div>
+          <div class="fgroup">
+            <label>Saralash</label>
+            <select class="fselect" name="sort">
+              <option value="newest" <%= (filters?.sort==='newest')?'selected':'' %>>Eng yangi</option>
+              <option value="oldest" <%= (filters?.sort==='oldest')?'selected':'' %>>Eng eski</option>
+              <option value="price_asc" <%= (filters?.sort==='price_asc')?'selected':'' %>>Narx (↑)</option>
+              <option value="price_desc" <%= (filters?.sort==='price_desc')?'selected':'' %>>Narx (↓)</option>
+              <option value="name_asc" <%= (filters?.sort==='name_asc')?'selected':'' %>>Nom (A→Z)</option>
+              <option value="name_desc" <%= (filters?.sort==='name_desc')?'selected':'' %>>Nom (Z→A)</option>
+            </select>
+          </div>
 
-    <div class="factions">
-      <button class="btn btn-primary" type="submit">Qo‘llash</button>
-      <a class="btn btn-ghost" href="/admin/product/all">Tozalash</a>
-    </div>
-  </form>
-</section>
-
-
-      
+          <div class="factions">
+            <button class="btn btn-primary" type="submit">Qo‘llash</button>
+            <a class="btn btn-ghost" href="/admin/product/all">Tozalash</a>
+          </div>
+        </form>
+      </section>
 
       <!-- DESKTOP TABLE -->
       <section class="card desktop-only">
@@ -112,7 +109,7 @@
                 <th style="width:120px">Narxi</th>
                 <th>Teglar</th>
                 <th style="width:110px">Rasm</th>
-                <th style="width:160px">Holat</th>
+                <th style="width:220px">Holat / Amallar</th>
               </tr>
             </thead>
 
@@ -148,18 +145,30 @@
                     <td>
                       <% if (p.productImages && p.productImages.length) { %>
                         <img class="thumb" src="/<%= p.productImages[0] %>" alt="Rasm"
-                             onerror="this.outerHTML='<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
+                          onerror="this.outerHTML='<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
                       <% } else { %>
                         <span class="muted">Rasm yo‘q</span>
                       <% } %>
                     </td>
 
                     <td>
-                      <select class="select new-product-status" id="<%= p._id %>">
-                        <option value="PAUSE" <%= p.productStatus === 'PAUSE' ? 'selected': '' %>>TO‘XTATILGAN</option>
-                        <option value="PROCESS" <%= p.productStatus === 'PROCESS' ? 'selected': '' %>>FAOL</option>
-                        <option value="DELETE" <%= p.productStatus === 'DELETE' ? 'selected': '' %>>O‘CHIRILGAN</option>
-                      </select>
+                      <div class="row-actions">
+                        <select class="select new-product-status" id="<%= p._id %>">
+                          <option value="PAUSE" <%= p.productStatus === 'PAUSE' ? 'selected': '' %>>TO‘XTATILGAN</option>
+                          <option value="PROCESS" <%= p.productStatus === 'PROCESS' ? 'selected': '' %>>FAOL</option>
+                          <option value="DELETE" <%= p.productStatus === 'DELETE' ? 'selected': '' %>>O‘CHIRILGAN</option>
+                        </select>
+
+                        <button
+                          class="btn btn-ghost btn-sm"
+                          type="button"
+                          data-product="<%= encodeURIComponent(JSON.stringify(p)) %>"
+                          onclick="openEditFromBtn(this)"
+                          title="Tahrirlash"
+                        >
+                          ✏️
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 <% }) %>
@@ -173,7 +182,7 @@
         </div>
       </section>
 
-      <!-- MOBILE CARDS -->
+      <!-- MOBILE CARDS (hozircha tegmaymiz) -->
       <section class="mobile-only">
         <% if (products && products.length) { %>
           <div class="cards">
@@ -188,8 +197,7 @@
                 </div>
 
                 <% if (p.productImages && p.productImages.length) { %>
-                  <img class="pImg" src="/<%= p.productImages[0] %>" alt="Rasm"
-                       onerror="this.style.display='none';" />
+                  <img class="pImg" src="/<%= p.productImages[0] %>" alt="Rasm" onerror="this.style.display='none';" />
                 <% } %>
 
                 <% if (p.productDesc) { %>
@@ -230,7 +238,7 @@
         </div>
 
         <form
-          onsubmit="return validateForm()"
+          onsubmit="return validateCreateForm()"
           action="/admin/product/create"
           method="POST"
           enctype="multipart/form-data"
@@ -277,6 +285,7 @@
                     type="file"
                     name="productImages"
                     <%= i === 1 ? 'required' : '' %>
+                    accept="image/*"
                     onchange="previewFileHandler(this, <%= i %>)"
                   />
                 </div>
@@ -288,6 +297,77 @@
           <div class="formActions">
             <button class="btn btn-danger" id="cancel-btn" type="button">Bekor qilish</button>
             <button class="btn btn-primary" type="submit">Saqlash</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- EDIT MODAL (same page) -->
+      <section class="card create" id="editBox">
+        <div class="card-head">
+          <div class="card-title">Mahsulotni tahrirlash</div>
+          <button class="btn btn-ghost" id="closeEditBtn" type="button">Yopish</button>
+        </div>
+
+        <!-- Biz submitni JS bilan ushlab, axios multipart qilib yuboramiz (API JSON qaytaradi) -->
+        <form id="editForm" class="form" enctype="multipart/form-data">
+          <input type="hidden" name="productStatus" id="editStatus" value="PAUSE" />
+
+          <div class="grid2">
+            <div class="field">
+              <label>Mahsulot nomi</label>
+              <input name="productName" id="editName" required />
+            </div>
+
+            <div class="field">
+              <label>Narxi</label>
+              <input type="number" name="productPrice" id="editPrice" min="0" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Teglar</label>
+            <div class="tagsGrid" id="editTagsGrid">
+              <% (productTagsEnum || []).forEach(function(tag){ %>
+                <label class="tagCheck">
+                  <input type="checkbox" name="productTags" value="<%= tag %>" />
+                  <span><%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %></span>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Tavsif</label>
+            <textarea name="productDesc" id="editDesc" placeholder="Ixtiyoriy..."></textarea>
+          </div>
+
+          <div class="field">
+            <label>Hozirgi rasmlar (ko‘rish uchun)</label>
+            <div class="existingRow" id="existingImages"></div>
+            <div class="hint">Eslatma: hozircha eski rasmlar avtomatik saqlanadi. Agar Siz yangi rasmlar tanlasangiz, server tomonda qanday yozganingizga qarab yangilanadi.</div>
+          </div>
+
+          <div class="field">
+            <label>Yangi rasmlar (0–5 ta)</label>
+            <div class="uploadRow">
+              <% for (let i=1; i<=5; i++) { %>
+                <div class="uploadBox">
+                  <img src="/img/upload.svg" id="edit-image-<%= i %>" alt="upload" />
+                  <!-- MUHIM: update route multeri array("productImage",5) bo‘lgani uchun name=productImage -->
+                  <input
+                    type="file"
+                    name="productImage"
+                    accept="image/*"
+                    onchange="previewEditImage(this, <%= i %>)"
+                  />
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="formActions">
+            <button class="btn btn-danger" id="cancelEditBtn" type="button">Bekor qilish</button>
+            <button class="btn btn-primary" type="submit">Yangilash</button>
           </div>
         </form>
       </section>
@@ -311,7 +391,6 @@
       }
       function openCreate() {
         createBox.classList.add('open');
-        // mobile’da formga scroll
         createBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
       function closeCreate() {
@@ -323,7 +402,6 @@
       if (closeCreateBtn) closeCreateBtn.addEventListener('click', closeCreate);
       if (cancelBtn) cancelBtn.addEventListener('click', closeCreate);
 
-      // tashqariga bossangiz drawer yopilsin
       document.addEventListener('click', (e) => {
         if (!drawer || !drawer.classList.contains('open')) return;
         const t = e.target;
