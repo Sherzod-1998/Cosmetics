@@ -101,7 +101,7 @@
 
                                     <div class="pBottom">
                                         <div class="pPrices">
-                                            <span class="pPrice">$<%= p.productPrice %></span>
+                                            <span class="pPrice">$<%= p.productPrice %> so`m</span>
 
                                             <% if (p.productOldPrice && p.productOldPrice> p.productPrice) { %>
                                                 <span class="pOldPrice">$<%= p.productOldPrice %></span>
@@ -122,23 +122,10 @@
                                     <% } %>
                 </div>
                 <div class="pager" id="pager" hidden>
-  <button type="button" class="pg-btn" id="pgPrev">← Oldingi</button>
+                    <button type="button" class="pg-btn" id="pgPrev">← Oldingi</button>
+                    <button type="button" class="pg-btn" id="pgNext">Keyingi →</button>
+                </div>
 
-  <div class="pg-info">
-    <span id="pgRange">1–12</span>
-    <span class="pg-dot">·</span>
-    <span id="pgTotal">0</span> ta
-  </div>
-
-  <button type="button" class="pg-btn" id="pgNext">Keyingi →</button>
-
-  <select class="pg-select" id="pgSize" title="Sahifadagi son">
-    <option value="8">8</option>
-    <option value="12" selected>12</option>
-    <option value="16">16</option>
-    <option value="24">24</option>
-  </select>
-</div>
 
             </section>
 

@@ -1,3 +1,9 @@
+/* /js/public-products.js
+   - AJAX filter/search refresh
+   - Clear filters
+   - Client-side pagination: ONLY Prev/Next, 8 items per page
+*/
+
 (() => {
 	const form = document.querySelector('.filterform');
 	if (!form) return;
@@ -8,17 +14,16 @@
 	let t = null;
 	let controller = null;
 
-	// ---------- PAGINATION STATE ----------
+	/* =========================
+     PAGINATION (prev/next only)
+     ========================= */
 	const pagerEl = document.getElementById('pager');
 	const btnPrev = document.getElementById('pgPrev');
 	const btnNext = document.getElementById('pgNext');
-	const rangeEl = document.getElementById('pgRange');
-	const totalEl = document.getElementById('pgTotal');
-	const sizeEl = document.getElementById('pgSize');
 
-	let allCards = []; // DOM elements list
+	let allCards = [];
 	let page = 1;
-	let pageSize = Number(sizeEl?.value || 12);
+	const pageSize = 8; // ✅ har pageda 8 ta
 
 	function getCardsWrap() {
 		return document.querySelector('#cardsWrap');
@@ -28,7 +33,7 @@
 		const wrap = getCardsWrap();
 		if (!wrap) return [];
 
-		// Empty state bo'lsa (.empty) - pagination kerak emas
+		// empty state bo‘lsa pagination ko‘rsatmaymiz
 		const empty = wrap.querySelector('.empty');
 		if (empty) return [];
 
@@ -36,9 +41,6 @@
 	}
 
 	function renderPage() {
-		const wrap = getCardsWrap();
-		if (!wrap) return;
-
 		const total = allCards.length;
 
 		if (!pagerEl) return;
@@ -48,8 +50,6 @@
 			return;
 		}
 
-		pagerEl.hidden = false;
-
 		const totalPages = Math.max(1, Math.ceil(total / pageSize));
 		if (page > totalPages) page = totalPages;
 		if (page < 1) page = 1;
@@ -57,19 +57,18 @@
 		const start = (page - 1) * pageSize;
 		const end = Math.min(start + pageSize, total);
 
-		// hammasini yashiramiz, faqat keraklilarni ko'rsatamiz
+		// hammasini yashiramiz, faqat keraklilarni ko‘rsatamiz
 		allCards.forEach((el, idx) => {
 			el.style.display = idx >= start && idx < end ? '' : 'none';
 		});
 
-		// UI update
-		if (rangeEl) rangeEl.textContent = `${start + 1}–${end}`;
-		if (totalEl) totalEl.textContent = String(total);
+		// 1 sahifa bo‘lsa tugmalarni ham yashiramiz
+		pagerEl.hidden = totalPages <= 1;
 
 		if (btnPrev) btnPrev.disabled = page <= 1;
 		if (btnNext) btnNext.disabled = page >= totalPages;
 
-		// countNote'ni ham "ko'rinayotgan" son bilan yangilab qo'ysak chiroyli bo'ladi
+		// countNote ni "ko‘rinayotgan" + jami qilib chiqaramiz
 		const countNote = document.getElementById('countNote');
 		if (countNote) countNote.textContent = `${end - start} ta mahsulot (jami ${total})`;
 	}
@@ -77,15 +76,15 @@
 	function initPagination(resetToFirst = true) {
 		allCards = collectCards();
 		if (resetToFirst) page = 1;
-		pageSize = Number(sizeEl?.value || pageSize || 12);
 		renderPage();
 	}
 
-	// pager events
 	if (btnPrev) {
 		btnPrev.addEventListener('click', () => {
 			page -= 1;
 			renderPage();
+
+			// tepaga yumshoq qaytish
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 		});
 	}
@@ -94,29 +93,30 @@
 		btnNext.addEventListener('click', () => {
 			page += 1;
 			renderPage();
+
+			// tepaga yumshoq qaytish
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 		});
 	}
 
-	if (sizeEl) {
-		sizeEl.addEventListener('change', () => {
-			pageSize = Number(sizeEl.value || 12);
-			page = 1;
-			renderPage();
-		});
-	}
+	/* =========================
+     AJAX REFRESH
+     ========================= */
 
-	// lastQS ni DOM’dan real-time tekshiramiz
+	// formdagi qiymatlarni real-time querystring qilib olamiz
 	function getQS() {
 		return new URLSearchParams(new FormData(form)).toString();
 	}
 
 	async function ajaxRefresh() {
 		const qs = getQS();
-		const url = `${form.getAttribute('action') || location.pathname}?${qs}`;
+		const action = form.getAttribute('action') || location.pathname;
+		const url = `${action}?${qs}`;
 
+		// URL’ni reloadsiz yangilab qo‘yamiz
 		history.replaceState({}, '', url);
 
+		// oldingi request bo‘lsa cancel
 		if (controller) controller.abort();
 		controller = new AbortController();
 
@@ -135,6 +135,7 @@
 			const newCount = doc.querySelector('#countNote');
 			const curCount = document.querySelector('#countNote');
 
+			// agar serverdan kutilgan DOM kelmasa => fallback full submit
 			if (!newCards || !curCards) {
 				form.submit();
 				return;
@@ -146,21 +147,27 @@
 				curCount.innerHTML = newCount.innerHTML;
 			}
 
-			// ✅ AJAX yangilangandan keyin pagination qayta init
+			// ✅ yangi cardlar kelgandan keyin pagination qayta ishlasin
 			initPagination(true);
 		} catch (err) {
 			if (err && err.name === 'AbortError') return;
 			console.log(err);
+
+			// internet/parse muammo bo‘lsa ham user ishlata olsin
 			form.submit();
 		}
 	}
+
+	/* =========================
+     EVENTS
+     ========================= */
 
 	// typing (debounce)
 	if (qInput) {
 		qInput.addEventListener('input', () => {
 			clearTimeout(t);
 			t = setTimeout(() => {
-				page = 1; // qidirishda birinchi sahifaga qaytamiz
+				page = 1;
 				ajaxRefresh();
 			}, 300);
 		});
@@ -175,24 +182,6 @@
 		});
 	}
 
-	// CLEAR FILTERS
-	const clearBtn = document.getElementById('clearFilters');
-
-	if (clearBtn) {
-		clearBtn.addEventListener('click', () => {
-			if (qInput) qInput.value = '';
-
-			selects.forEach((s) => {
-				s.value = 'ALL';
-				if (s.name === 'sort') s.value = 'newest';
-			});
-
-			history.replaceState({}, '', '/');
-			page = 1;
-			ajaxRefresh();
-		});
-	}
-
 	// select change
 	selects.forEach((s) => {
 		s.addEventListener('change', () => {
@@ -202,6 +191,33 @@
 		});
 	});
 
-	// ✅ first load init
+	// CLEAR FILTERS
+	const clearBtn = document.getElementById('clearFilters');
+
+	if (clearBtn) {
+		clearBtn.addEventListener('click', () => {
+			// q ni tozalaymiz
+			if (qInput) qInput.value = '';
+
+			// selectlarni default holatga qaytaramiz
+			selects.forEach((s) => {
+				if (s.name === 'tag') s.value = 'ALL';
+				if (s.name === 'sort') s.value = 'newest';
+			});
+
+			// URL’ni tozalaymiz (action "/")
+			history.replaceState({}, '', '/');
+
+			// paginationni 1 ga tushiramiz
+			page = 1;
+
+			// AJAX bilan yangilaymiz
+			ajaxRefresh();
+		});
+	}
+
+	/* =========================
+     FIRST LOAD
+     ========================= */
 	initPagination(true);
 })();
