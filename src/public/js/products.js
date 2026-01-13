@@ -15,15 +15,15 @@ $(function () {
 	$('#cancelEditBtn').on('click', closeEdit);
 
 	// STATUS UPDATE (axios JSON)
-	$('.new-product-status').on('change', async function (e) {
+	$(document).on('change', '.new-product-status', async function (e) {
 		const id = e.target.id;
-		const productStatus = $(`#${id}.new-product-status`).val();
+		const productStatus = $(this).val();
 
 		try {
 			const response = await axios.post(`/admin/product/${id}`, { productStatus });
 			const result = response.data;
 			if (result && result.data) {
-				$('.new-product-status').blur();
+				$(this).blur();
 			} else {
 				alert('Holatni yangilashda xato!');
 			}
@@ -207,3 +207,60 @@ async function deleteProduct(id, name) {
 		alert('O‘chirishda xato!');
 	}
 }
+
+(() => {
+	const form = document.querySelector('.filterform');
+	if (!form) return;
+
+	const qInput = form.querySelector('input[name="q"]');
+	const selects = form.querySelectorAll('select');
+
+	// Sahifani keraksiz qayta yuklamaslik uchun:
+	// - typingda 350ms kutadi
+	// - aynan bir xil query bo‘lsa submit qilmaydi
+	let t = null;
+	let lastQS = new URLSearchParams(new FormData(form)).toString();
+
+	const submitIfChanged = () => {
+		const qs = new URLSearchParams(new FormData(form)).toString();
+		if (qs === lastQS) return;
+		lastQS = qs;
+		form.submit();
+	};
+
+	// 1) Harf-harf qidiruv (debounce)
+	if (qInput) {
+		qInput.addEventListener('input', () => {
+			clearTimeout(t);
+			t = setTimeout(submitIfChanged, 350);
+		});
+
+		// ixtiyoriy: Enter bosilsa darhol
+		qInput.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter') {
+				clearTimeout(t);
+				e.preventDefault();
+				submitIfChanged();
+			}
+		});
+	}
+
+	// 2) Filterlar (select) o‘zgarganda darhol
+	selects.forEach((s) => {
+		s.addEventListener('change', () => {
+			clearTimeout(t);
+			submitIfChanged();
+		});
+	});
+})();
+
+(() => {
+	const params = new URLSearchParams(location.search);
+	if (params.get('q')) {
+		const qInput = document.querySelector('.filterform input[name="q"]');
+		if (qInput) {
+			qInput.focus();
+			qInput.setSelectionRange(qInput.value.length, qInput.value.length);
+		}
+	}
+})();
