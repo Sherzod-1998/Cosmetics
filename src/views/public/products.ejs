@@ -20,7 +20,7 @@
 
         <!-- FILTER + SEARCH -->
         <section class="card">
-          <form class="filterform" method="GET" action="/products">
+          <form class="filterform" method="GET" action="/">
             <div class="fgroup">
               <label>Qidirish</label>
               <input
@@ -55,6 +55,13 @@
                 <option value="name_desc" <%= (filters?.sort==='name_desc')?'selected':'' %>>Nom (Z→A)</option>
               </select>
             </div>
+
+            <div class="fgroup fgroup-clear">
+  <button type="button" class="btn-clear" id="clearFilters">
+    Tozalash
+  </button>
+</div>
+
           </form>
         </section>
 
@@ -62,13 +69,13 @@
         <section class="card">
           <div class="card-head">
             <div class="card-title">Natijalar</div>
-            <div class="card-note"><%= products?.length || 0 %> ta mahsulot</div>
+           <div class="card-note" id="countNote"><%= products?.length || 0 %> ta mahsulot</div>
           </div>
 
-          <div class="cards-wrap">
+          <div class="cards-wrap" id="cardsWrap">
             <% if (products && products.length) { %>
               <% products.forEach(function(p){ %>
-                <a class="pCard" href="/products/<%= p._id %>">
+                <div class="pCard">
                   <div class="pImage">
                     <% if (p.productImages && p.productImages.length) { %>
                       <img
@@ -102,7 +109,7 @@
                       <% } %>
                     </div>
                   </div>
-                </a>
+                </div>
               <% }) %>
             <% } else { %>
               <div class="empty">Hech narsa topilmadi.</div>

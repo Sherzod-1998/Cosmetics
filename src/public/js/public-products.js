@@ -6,17 +6,21 @@
 	const selects = form.querySelectorAll('select');
 
 	let t = null;
-	let lastQS = new URLSearchParams(new FormData(form)).toString();
 	let controller = null;
 
-	async function ajaxRefresh() {
-		const qs = new URLSearchParams(new FormData(form)).toString();
-		if (qs === lastQS) return;
-		lastQS = qs;
+	// lastQS ni DOM’dan real-time tekshiramiz (avvalgi xato shu yerda edi)
+	function getQS() {
+		return new URLSearchParams(new FormData(form)).toString();
+	}
 
+	async function ajaxRefresh() {
+		const qs = getQS();
 		const url = `${form.getAttribute('action') || location.pathname}?${qs}`;
+
+		// URL’ni reloadsiz yangilab qo‘yamiz
 		history.replaceState({}, '', url);
 
+		// oldingi request bo‘lsa cancel
 		if (controller) controller.abort();
 		controller = new AbortController();
 
@@ -29,19 +33,33 @@
 			const html = await res.text();
 			const doc = new DOMParser().parseFromString(html, 'text/html');
 
-			const newCards = doc.querySelector('.cards-wrap');
-			const curCards = document.querySelector('.cards-wrap');
-			const newCount = doc.querySelector('.card-note');
-			const curCount = document.querySelector('.card-note');
+			const newCards = doc.querySelector('#cardsWrap');
+			const curCards = document.querySelector('#cardsWrap');
 
-			if (newCards && curCards) curCards.innerHTML = newCards.innerHTML;
-			if (newCount && curCount) curCount.innerHTML = newCount.innerHTML;
+			const newCount = doc.querySelector('#countNote');
+			const curCount = document.querySelector('#countNote');
+
+			// agar serverdan kutilgan DOM kelmasa => fallback full submit
+			if (!newCards || !curCards) {
+				form.submit();
+				return;
+			}
+
+			curCards.innerHTML = newCards.innerHTML;
+
+			if (newCount && curCount) {
+				curCount.innerHTML = newCount.innerHTML;
+			}
 		} catch (err) {
-			if (err?.name === 'AbortError') return;
+			if (err && err.name === 'AbortError') return;
 			console.log(err);
+
+			// internet/parse muammo bo‘lsa ham user ishlata olsin
+			form.submit();
 		}
 	}
 
+	// typing (debounce)
 	if (qInput) {
 		qInput.addEventListener('input', () => {
 			clearTimeout(t);
@@ -57,6 +75,29 @@
 		});
 	}
 
+	// CLEAR FILTERS
+	const clearBtn = document.getElementById('clearFilters');
+
+	if (clearBtn) {
+		clearBtn.addEventListener('click', () => {
+			// inputni tozalaymiz
+			if (qInput) qInput.value = '';
+
+			// selectlarni default holatga qaytaramiz
+			selects.forEach((s) => {
+				s.value = 'ALL'; // tag uchun
+				if (s.name === 'sort') s.value = 'newest';
+			});
+
+			// URL’ni tozalaymiz
+			history.replaceState({}, '', '/');
+
+			// AJAX bilan yangilaymiz
+			ajaxRefresh();
+		});
+	}
+
+	// select change
 	selects.forEach((s) => {
 		s.addEventListener('change', () => {
 			clearTimeout(t);
