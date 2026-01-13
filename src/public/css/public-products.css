@@ -209,3 +209,11 @@ body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, 
     grid-template-columns: 1fr;
   }
 }
+
+/* Filter sticky */
+.filter-card{
+  position: sticky;
+  top: 12px;            /* tepadan masofa */
+  z-index: 60;          /* cardlar ustida turishi uchun */
+  background: #fff;     /* yopishganda tagi ko‘rinib qolmasin */
+}
