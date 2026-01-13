@@ -46,6 +46,32 @@ class ProductService {
 		return result;
 	}
 
+	public async getPublicProducts(inquiry?: { q?: string; tag?: string; sort?: string }) {
+		const q = inquiry?.q?.trim() || '';
+		const tag = inquiry?.tag || 'ALL';
+		const sort = inquiry?.sort || 'newest';
+
+		const filter: any = { productStatus: ProductStatus.PROCESS };
+
+		if (q) {
+			filter.$or = [{ productName: { $regex: q, $options: 'i' } }, { productDesc: { $regex: q, $options: 'i' } }];
+		}
+
+		if (tag !== 'ALL') {
+			filter.productTags = { $in: [tag] };
+		}
+
+		let sortQuery: any = { _id: -1 };
+		if (sort === 'oldest') sortQuery = { _id: 1 };
+		if (sort === 'price_asc') sortQuery = { productPrice: 1 };
+		if (sort === 'price_desc') sortQuery = { productPrice: -1 };
+		if (sort === 'name_asc') sortQuery = { productName: 1 };
+		if (sort === 'name_desc') sortQuery = { productName: -1 };
+
+		// ✅ typescript muammo bo‘lmasin:
+		return await this.productModel.find(filter).sort(sortQuery).lean().exec();
+	}
+
 	public async getProduct(memberId: ObjectId | null, id: string): Promise<Product> {
 		const productId = shapeIntoMongooseObjectId(id);
 

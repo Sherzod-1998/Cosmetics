@@ -100,6 +100,26 @@ productController.getAllProducts = async (req: Request, res: Response) => {
 	}
 };
 
+productController.getPublicProducts = async (req: Request, res: Response) => {
+	try {
+		const q = String(req.query.q || '');
+		const tag = String(req.query.tag || 'ALL');
+		const sort = String(req.query.sort || 'newest');
+
+		const products = await productService.getPublicProducts({ q, tag, sort });
+
+		return res.render('public/products', {
+			products,
+			filters: { q, tag, sort },
+			productTagsEnum: Object.values(ProductTag),
+			productTagLabels: PRODUCT_TAG_LABELS,
+		});
+	} catch (err) {
+		console.log('getPublicProducts error:', err);
+		return res.status(500).send('Server error');
+	}
+};
+
 productController.recommendProducts = async (req: Request, res: Response) => {
 	try {
 		const { productId } = req.params;

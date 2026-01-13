@@ -57,18 +57,6 @@
           </div>
 
           <div class="fgroup">
-            <label>Holat</label>
-            <select class="fselect" name="status">
-              <option value="ALL" <%=(filters?.status==='ALL' )?'selected':'' %>>Barchasi</option>
-              <% (productStatusEnum || []).forEach(function(s){ %>
-                <option value="<%= s %>" <%=(filters?.status===s)?'selected':'' %>>
-                  <%= s==='PAUSE' ? "TO‘XTATILGAN" : (s==='PROCESS' ? 'FAOL' : 'O‘CHIRILGAN' ) %>
-                </option>
-              <% }) %>
-            </select>
-          </div>
-
-          <div class="fgroup">
             <label>Saralash</label>
             <select class="fselect" name="sort">
               <option value="newest" <%=(filters?.sort==='newest' )?'selected':'' %>>Eng yangi</option>

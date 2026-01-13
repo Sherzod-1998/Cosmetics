@@ -6,6 +6,7 @@ import orderController from './controllers/order.controller';
 const router = express.Router();
 
 /** Member */
+
 router.get('/member/seller', memberController.getSeller);
 router.post('/member/login', memberController.login);
 router.post('/member/signup', memberController.signup);
@@ -24,7 +25,7 @@ router.get('/member/top-users', memberController.getTopUsers);
 router.get('/product/all', productController.getProducts);
 router.get('/product/:id', memberController.retrieveAuth, productController.getProduct);
 router.get('/product/recommend/:productId', productController.recommendProducts);
-
+router.get('/', productController.getPublicProducts);
 /** Product **/
 
 /** Order  */
