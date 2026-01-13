@@ -95,9 +95,18 @@ sellerController.logout = async (req: AdminRequest, res: Response) => {
 sellerController.getUsers = async (req: Request, res: Response) => {
 	try {
 		console.log('getUsers');
-		const result = await memberService.getUsers();
-		console.log('result', result);
-		res.render('users', { users: result });
+
+		const q = String(req.query.q || '');
+		const status = String(req.query.status || 'ALL');
+		const sort = String(req.query.sort || 'newest');
+
+		const result = await memberService.getUsers({ q, status, sort });
+
+		res.render('users', {
+			users: result,
+			filters: { q, status, sort },
+			member: (req as any).session?.member, // users.ejs ichida member tekshirilyapti
+		});
 	} catch (err) {
 		console.log('Error, getUsers:', err);
 		res.redirect('/admin/login');

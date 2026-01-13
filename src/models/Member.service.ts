@@ -88,10 +88,37 @@ class MemberService {
 
 		return result;
 	}
-	public async getUsers(): Promise<Member[]> {
-		const result = await this.memberModel.find({ memberType: MemberType.USER }).exec();
+	public async getUsers(inquiry?: { q?: string; status?: string; sort?: string }): Promise<Member[]> {
+		const q = inquiry?.q?.trim() || '';
+		const status = inquiry?.status || 'ALL';
+		const sort = inquiry?.sort || 'newest';
 
-		if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+		const filter: any = {
+			memberType: MemberType.USER,
+		};
+
+		// 🔍 SEARCH (nick yoki phone)
+		if (q) {
+			filter.$or = [{ memberNick: { $regex: q, $options: 'i' } }, { memberPhone: { $regex: q, $options: 'i' } }];
+		}
+
+		// 🚦 STATUS FILTER
+		if (status !== 'ALL') {
+			filter.memberStatus = status; // ACTIVE | BLOCK | DELETE
+		}
+
+		// 🔃 SORT
+		let sortQuery: any = { _id: -1 }; // newest
+		if (sort === 'oldest') sortQuery = { _id: 1 };
+		if (sort === 'name_asc') sortQuery = { memberNick: 1 };
+		if (sort === 'name_desc') sortQuery = { memberNick: -1 };
+
+		const result = await this.memberModel.find(filter).sort(sortQuery).exec();
+
+		if (!result) {
+			throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+		}
+
 		return result;
 	}
 
