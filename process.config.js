@@ -1,6 +1,6 @@
 module.exports = {
   apps: [{
-    name: "NONIK",
+    name: "COSMETICS",
     cwd: "./",
     script: "./dist/server.js",
     watch: false,
