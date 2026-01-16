@@ -262,71 +262,77 @@
         </section>
 
         <!-- EDIT MODAL (same page) -->
-        <section class="card create" id="editBox">
-          <div class="card-head">
-            <div class="card-title">Mahsulotni tahrirlash</div>
-            <button class="btn btn-ghost" id="closeEditBtn" type="button">Yopish</button>
-          </div>
+        <!-- EDIT MODAL BACKDROP -->
+        <div class="modal-backdrop" id="editBackdrop"></div>
 
-          <form id="editForm" class="form" enctype="multipart/form-data">
-            <input type="hidden" name="productStatus" id="editStatus" value="PAUSE" />
+          <section class="card create" id="editBox">
+            <!-- <div class="card-head">
+              <div class="card-title">Mahsulotni tahrirlash</div>
+              <button class="btn btn-ghost" id="closeEditBtn" type="button">Yopish</button>
+            </div> -->
 
-            <div class="grid2">
-              <div class="field">
-                <label>Mahsulot nomi</label>
-                <input name="productName" id="editName" required />
+            <form id="editForm" class="form" enctype="multipart/form-data">
+              <input type="hidden" name="productStatus" id="editStatus" value="PAUSE" />
+
+              <div class="grid2">
+                <div class="field">
+                  <label>Mahsulot nomi</label>
+                  <input name="productName" id="editName" required />
+                </div>
+
+                <div class="field">
+                  <label>Narxi</label>
+                  <input type="number" name="productPrice" id="editPrice" min="0" required />
+                </div>
               </div>
 
               <div class="field">
-                <label>Narxi</label>
-                <input type="number" name="productPrice" id="editPrice" min="0" required />
+                <label>Teglar</label>
+                <div class="tagsGrid" id="editTagsGrid">
+                  <% (productTagsEnum || []).forEach(function(tag){ %>
+                    <label class="tagCheck">
+                      <input type="checkbox" name="productTags" value="<%= tag %>" />
+                      <span>
+                        <%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %>
+                      </span>
+                    </label>
+                    <% }) %>
+                </div>
               </div>
-            </div>
 
-            <div class="field">
-              <label>Teglar</label>
-              <div class="tagsGrid" id="editTagsGrid">
-                <% (productTagsEnum || []).forEach(function(tag){ %>
-                  <label class="tagCheck">
-                    <input type="checkbox" name="productTags" value="<%= tag %>" />
-                    <span>
-                      <%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %>
-                    </span>
-                  </label>
-                  <% }) %>
+              <div class="field">
+                <label>Tavsif</label>
+                <textarea name="productDesc" id="editDesc" placeholder="Ixtiyoriy..."></textarea>
               </div>
-            </div>
 
-            <div class="field">
-              <label>Tavsif</label>
-              <textarea name="productDesc" id="editDesc" placeholder="Ixtiyoriy..."></textarea>
-            </div>
-
-            <div class="field">
-              <label>Hozirgi rasmlar (ko‘rish uchun)</label>
-              <div class="existingRow" id="existingImages"></div>
-              <div class="hint">Eslatma: hozircha eski rasmlar avtomatik saqlanadi...</div>
-            </div>
-
-            <div class="field">
-              <label>Yangi rasmlar (0–5 ta)</label>
-              <div class="uploadRow">
-                <% for (let i=1; i<=5; i++) { %>
-                  <div class="uploadBox">
-                    <img src="/img/upload.svg" id="edit-image-<%= i %>" alt="upload" />
-                    <input type="file" name="productImage" accept="image/*"
-                      onchange="previewEditImage(this, <%= i %>)" />
-                  </div>
-                  <% } %>
+              <div class="field">
+                <label>Hozirgi rasmlar (ko‘rish uchun)</label>
+                <div class="existingRow" id="existingImages"></div>
+                <div class="hint">Eslatma: hozircha eski rasmlar avtomatik saqlanadi...</div>
               </div>
-            </div>
 
-            <div class="formActions">
-              <button class="btn btn-danger" id="cancelEditBtn" type="button">Bekor qilish</button>
-              <button class="btn btn-primary" type="submit">Yangilash</button>
-            </div>
-          </form>
-        </section>
+              <div class="field">
+                <label>Yangi rasmlar (0–5 ta)</label>
+                <div class="uploadRow">
+                  <% for (let i=1; i<=5; i++) { %>
+                    <div class="uploadBox">
+                      <img src="/img/upload.svg" id="edit-image-<%= i %>" alt="upload" />
+                      <input type="file" name="productImage" accept="image/*"
+                        onchange="previewEditImage(this, <%= i %>)" />
+                    </div>
+                    <% } %>
+                </div>
+              </div>
+
+              <div class="formActions">
+                <button class="btn btn-danger" id="cancelEditBtn" type="button">Bekor qilish</button>
+                <button class="btn btn-primary" type="submit">Yangilash</button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+
       </main>
     </div>
 

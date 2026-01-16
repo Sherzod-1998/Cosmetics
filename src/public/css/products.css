@@ -272,3 +272,84 @@ a { text-decoration: none; color: inherit; }
 .hint { font-size: 12px; color: var(--muted2); margin-top: 8px; }
 
 .formActions { display: flex; justify-content: space-between; gap: 10px; }
+
+/* =========================
+   EDIT MODAL (CENTER POPUP)
+   ========================= */
+
+body.modal-open{
+  overflow: hidden; /* ✅ modal ochilganda body scroll to'xtaydi */
+}
+
+/* overlay */
+.modal-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 999; /* editBox'dan pastroq bo'ladi */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+
+.modal-backdrop.open{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* editBox endi modal bo'ladi */
+#editBox{
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+
+  /* yashirin holat */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+/* modal ochilganda */
+#editBox.open{
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* modal card */
+#editBox .form{
+  width: min(920px, calc(100vw - 32px));
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+
+  background: #141414;
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 18px;
+  box-shadow: 0 30px 90px rgba(0,0,0,.25);
+  padding: 16px;
+}
+
+/* header "Yopish" sticky bo'lsin */
+#editBox .card-head{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #000000;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+/* mobil uchun */
+@media (max-width: 520px){
+  #editBox .form{
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 90px);
+    border-radius: 16px;
+  }
+}

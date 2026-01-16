@@ -161,12 +161,25 @@ function openEdit(product) {
 	document.querySelectorAll('#editBox input[type="file"]').forEach((inp) => (inp.value = ''));
 
 	// open modal
-	document.getElementById('editBox').classList.add('open');
-	document.getElementById('editBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
+	document.getElementById('editBackdrop').classList.add('open');
+	document.body.classList.add('modal-open');
+
+	const box = document.getElementById('editBox');
+	box.classList.add('open');
+
+	// modal ichidagi scroll tepaga (form uzun bo'lsa)
+	const form = box.querySelector('.form');
+	if (form) form.scrollTop = 0;
 }
 
 function closeEdit() {
-	document.getElementById('editBox').classList.remove('open');
+	const box = document.getElementById('editBox');
+	box.classList.remove('open');
+
+	const bd = document.getElementById('editBackdrop');
+	if (bd) bd.classList.remove('open');
+
+	document.body.classList.remove('modal-open');
 	window.__editId = null;
 }
 
@@ -264,3 +277,7 @@ async function deleteProduct(id, name) {
 		}
 	}
 })();
+
+document.addEventListener('keydown', (e) => {
+	if (e.key === 'Escape') closeEdit();
+});
