@@ -76,15 +76,16 @@ productController.getAllProducts = async (req: Request, res: Response) => {
 		const q = (req.query.q as string) || '';
 		const tag = (req.query.tag as string) || 'ALL';
 		const status = (req.query.status as string) || 'ALL';
+		const hasImage = (req.query.hasImage as string) || 'ALL'; // ✅ qo‘shildi
 		const sort = (req.query.sort as string) || 'newest';
 
-		const data = await productService.getAllProducts({ q, tag, status, sort });
+		const data = await productService.getAllProducts({ q, tag, status, hasImage, sort });
 
 		res.render('products', {
 			products: data,
 
 			// EJS formda qiymatlarni saqlab turish uchun
-			filters: { q, tag, status, sort },
+			filters: { q, tag, status, hasImage, sort }, // ✅ qo‘shildi
 
 			productTagsEnum: Object.values(ProductTag),
 			productStatusEnum: Object.values(ProductStatus),

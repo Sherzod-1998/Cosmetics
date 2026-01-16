@@ -133,6 +133,7 @@ class ProductService {
 		q?: string;
 		tag?: string;
 		status?: string;
+		hasImage?: string; // ✅ qo‘shildi
 		sort?: string;
 	}): Promise<Product[]> {
 		const filter: any = {};
@@ -142,7 +143,7 @@ class ProductService {
 			filter.productName = { $regex: query.q.trim(), $options: 'i' };
 		}
 
-		// Filter by tag (array ichida bor bo‘lsa match)
+		// Filter by tag
 		if (query?.tag && query.tag !== 'ALL') {
 			filter.productTags = query.tag;
 		}
@@ -150,6 +151,15 @@ class ProductService {
 		// Filter by status
 		if (query?.status && query.status !== 'ALL') {
 			filter.productStatus = query.status;
+		}
+
+		// ✅ Filter by image presence
+		if (query?.hasImage === 'YES') {
+			// kamida 1 ta rasm bor
+			filter['productImages.0'] = { $exists: true };
+		} else if (query?.hasImage === 'NO') {
+			// rasm yo‘q: array yo‘q yoki bo‘sh
+			filter.$or = [{ productImages: { $exists: false } }, { productImages: { $size: 0 } }];
 		}
 
 		// Sort
