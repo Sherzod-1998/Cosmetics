@@ -209,12 +209,22 @@ async function deleteProduct(id, name) {
 
 	try {
 		const res = await axios.delete(`/admin/product/${id}`);
-		if (res.data && res.data.ok) {
+
+		// ✅ universal success check
+		if (res.status === 200 && (res.data?.ok === true || res.data?.data || res.data?.result)) {
 			alert('Mahsulot o‘chirildi');
 			window.location.reload();
-		} else {
-			alert('O‘chirishda xato!');
+			return;
 		}
+
+		// agar backend oddiy {ok:true} yuborsa ham
+		if (res.data?.ok === true) {
+			alert('Mahsulot o‘chirildi');
+			window.location.reload();
+			return;
+		}
+
+		alert('O‘chirishda xato!');
 	} catch (err) {
 		console.log(err);
 		alert('O‘chirishda xato!');
@@ -280,4 +290,10 @@ async function deleteProduct(id, name) {
 
 document.addEventListener('keydown', (e) => {
 	if (e.key === 'Escape') closeEdit();
+});
+
+$(document).on('click', '.js-delete-product', function () {
+	const id = this.dataset.id;
+	const name = this.dataset.name || '';
+	deleteProduct(id, name);
 });
