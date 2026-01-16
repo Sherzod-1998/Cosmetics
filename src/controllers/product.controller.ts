@@ -168,6 +168,22 @@ productController.updateChosenProduct = async (req: Request, res: Response) => {
 	try {
 		console.log('updateChosenProduct');
 		const id = req.params.id;
+
+		// ✅ multer array() -> req.files
+		const files = (req.files as Express.Multer.File[]) || [];
+
+		// ✅ agar yangi rasm(lar) kelsa, DBga yozish uchun body ga qo‘shamiz
+		if (files.length) {
+			const newImages = files.map((f) => (f.path || '').replace(/\\/g, '/'));
+			// f.path: masalan "uploads/products/abc.jpg"
+
+			// Variant A: yangi rasmlar kelsa, eski rasmlarni to‘liq almashtirish
+			req.body.productImages = newImages;
+
+			// Variant B: yangi rasmlarni eski rasmlar ustiga qo‘shib yuborish (append) — pastda service’da qilamiz
+			// req.body.__newImages = newImages; // xohlasangiz shunday yuborib, service’da merge qiling
+		}
+
 		const result = await productService.updateChosenProduct(id, req.body);
 		res.status(HttpCode.OK).json({ data: result });
 	} catch (err) {
@@ -179,6 +195,7 @@ productController.updateChosenProduct = async (req: Request, res: Response) => {
 		}
 	}
 };
+
 productController.deleteProduct = async (req: Request, res: Response) => {
 	try {
 		const id = req.params.id;
