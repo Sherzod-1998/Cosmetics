@@ -159,12 +159,16 @@
                       </td>
 
                       <td>
-                        <% if (p.productImages && p.productImages.length) { %>
-                          <img class="thumb" src="/<%= p.productImages[0] %>" alt="Rasm"
-                            onerror="this.outerHTML='<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
-                          <% } else { %>
-                            <span class="muted">Rasm yo‘q</span>
-                            <% } %>
+                        <% if (p.productImages && p.productImages.length) { 
+     const raw = p.productImages[0];
+     const src = raw.startsWith('http') ? raw : (raw.startsWith('/') ? raw : '/' + raw);
+%>
+  <img class="thumb" src="<%= src %>" alt="Rasm"
+    onerror="this.outerHTML='<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
+<% } else { %>
+  <span class="muted">Rasm yo‘q</span>
+<% } %>
+
                       </td>
 
                       <td>
@@ -181,13 +185,8 @@
                             data-product="<%= encodeURIComponent(JSON.stringify(p)) %>" onclick="openEditFromBtn(this)"
                             title="Tahrirlash">✏️</button>
 
-                          <button
-  class="btn btn-danger btn-sm js-delete-product"
-  type="button"
-  data-id="<%= p._id %>"
-  data-name="<%= p.productName %>"
-  title="O‘chirish"
->🗑</button>
+                          <button class="btn btn-danger btn-sm js-delete-product" type="button" data-id="<%= p._id %>"
+                            data-name="<%= p.productName %>" title="O‘chirish">🗑</button>
 
 
                         </div>
