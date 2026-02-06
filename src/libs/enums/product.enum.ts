@@ -36,7 +36,7 @@ export enum ProductCollection {
 }
 
 export enum ProductTag {
-	// Collection
+	// Collection / Type
 	SKINCARE = 'SKINCARE',
 	MAKEUP = 'MAKEUP',
 	HAIRCARE = 'HAIRCARE',
@@ -51,6 +51,8 @@ export enum ProductTag {
 	FOR_SPOTS = 'FOR_SPOTS', // dog'lar uchun
 	FOR_PORES = 'FOR_PORES', // poralar uchun
 	EYE_AREA = 'EYE_AREA', // ko'z atrofi uchun
+	MOISTURIZING = 'MOISTURIZING', // 💧 namlantiruvchi
+	COLLAGEN = 'COLLAGEN', // 🧬 kollagen
 
 	// Skin targeting
 	FOR_OILY_SKIN = 'FOR_OILY_SKIN', // yog'li yuzlar uchun
@@ -61,8 +63,17 @@ export enum ProductTag {
 	FOR_HANDS = 'FOR_HANDS', // qo'l uchun
 	FOR_FEET = 'FOR_FEET', // oyoq uchun
 	FOR_INTIMATE = 'FOR_INTIMATE', // intim sohalar uchun
+	FACE_CLEANSER = 'FACE_CLEANSER', // 🧼 yuz tozalovchi
 
-	// Edible
+	// Hair
+	SHAMPOO = 'SHAMPOO', // 🧴 shampun
+
+	// Makeup items
+	LIPSTICK = 'LIPSTICK', // 💄 pomada
+
+	// Edible / Medical
 	EDIBLE = 'EDIBLE', // istemol qilinadigan
 	VITAMINS = 'VITAMINS', // vitaminlar
+	LACTOFIT = 'LACTOFIT', // 🦠 lactofitlar (probiotik)
+	MEDICINE = 'MEDICINE', // 💊 dorilar
 }
