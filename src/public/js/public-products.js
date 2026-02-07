@@ -1,7 +1,7 @@
 /* /js/public-products.js
    - AJAX filter/search refresh
    - Clear filters
-   - Client-side pagination: ONLY Prev/Next, 8 items per page
+   - BACKEND pagination: ONLY Prev/Next (page/limit query orqali)
 */
 (() => {
 	const form = document.querySelector('.filterform');
@@ -10,91 +10,47 @@
 	const qInput = form.querySelector('input[name="q"]');
 	const selects = form.querySelectorAll('select');
 
+	const pageInput = form.querySelector('input[name="page"]');
+	const limitInput = form.querySelector('input[name="limit"]');
+
+	// ✅ agar hidden inputlar yo'q bo'lsa, o'zimiz qo'shib qo'yamiz (fail-safe)
+	if (!pageInput) {
+		const inp = document.createElement('input');
+		inp.type = 'hidden';
+		inp.name = 'page';
+		inp.value = '1';
+		form.prepend(inp);
+	}
+	if (!limitInput) {
+		const inp = document.createElement('input');
+		inp.type = 'hidden';
+		inp.name = 'limit';
+		inp.value = '8';
+		form.prepend(inp);
+	}
+
+	const pageEl = form.querySelector('input[name="page"]');
+	const limitEl = form.querySelector('input[name="limit"]');
+
 	let t = null;
 	let controller = null;
 
-	/* PAGINATION */
-	const pagerEl = document.getElementById('pager');
-	const btnPrev = document.getElementById('pgPrev');
-	const btnNext = document.getElementById('pgNext');
-
-	let allCards = [];
-	let page = 1;
-	const pageSize = 8;
-
-	function getCardsWrap() {
-		return document.querySelector('#cardsWrap');
+	function getAction() {
+		return form.getAttribute('action') || location.pathname;
 	}
 
-	function collectCards() {
-		const wrap = getCardsWrap();
-		if (!wrap) return [];
-
-		const empty = wrap.querySelector('.empty');
-		if (empty) return [];
-
-		return Array.from(wrap.querySelectorAll('.pCard'));
-	}
-
-	function renderPage() {
-		const total = allCards.length;
-		if (!pagerEl) return;
-
-		if (total === 0) {
-			pagerEl.hidden = true;
-			return;
-		}
-
-		const totalPages = Math.max(1, Math.ceil(total / pageSize));
-		if (page > totalPages) page = totalPages;
-		if (page < 1) page = 1;
-
-		const start = (page - 1) * pageSize;
-		const end = Math.min(start + pageSize, total);
-
-		allCards.forEach((el, idx) => {
-			el.style.display = idx >= start && idx < end ? '' : 'none';
-		});
-
-		pagerEl.hidden = totalPages <= 1;
-
-		if (btnPrev) btnPrev.disabled = page <= 1;
-		if (btnNext) btnNext.disabled = page >= totalPages;
-
-		const countNote = document.getElementById('countNote');
-		if (countNote) countNote.textContent = `${end - start} ta mahsulot (jami ${total})`;
-	}
-
-	function initPagination(resetToFirst = true) {
-		allCards = collectCards();
-		if (resetToFirst) page = 1;
-		renderPage();
-	}
-
-	if (btnPrev) {
-		btnPrev.addEventListener('click', () => {
-			page -= 1;
-			renderPage();
-			window.scrollTo({ top: 0, behavior: 'smooth' });
-		});
-	}
-
-	if (btnNext) {
-		btnNext.addEventListener('click', () => {
-			page += 1;
-			renderPage();
-			window.scrollTo({ top: 0, behavior: 'smooth' });
-		});
-	}
-
-	/* AJAX REFRESH */
 	function getQS() {
 		return new URLSearchParams(new FormData(form)).toString();
 	}
 
-	async function ajaxRefresh() {
+	function setPage(n) {
+		const v = Math.max(1, Number(n || 1));
+		pageEl.value = String(v);
+	}
+
+	async function ajaxRefresh({ scrollTop = false } = {}) {
 		const qs = getQS();
-		const action = form.getAttribute('action') || location.pathname;
+		const action = getAction();
 		const url = `${action}?${qs}`;
 
 		history.replaceState({}, '', url);
@@ -117,6 +73,12 @@
 			const newCount = doc.querySelector('#countNote');
 			const curCount = document.querySelector('#countNote');
 
+			const newPager = doc.querySelector('#pager');
+			const curPager = document.querySelector('#pager');
+
+			const newPageInput = doc.querySelector('input[name="page"]');
+			const newLimitInput = doc.querySelector('input[name="limit"]');
+
 			if (!newCards || !curCards) {
 				form.submit();
 				return;
@@ -124,11 +86,16 @@
 
 			curCards.innerHTML = newCards.innerHTML;
 
-			if (newCount && curCount) {
-				curCount.innerHTML = newCount.innerHTML;
-			}
+			if (newCount && curCount) curCount.innerHTML = newCount.innerHTML;
 
-			initPagination(true);
+			if (newPager && curPager) curPager.outerHTML = newPager.outerHTML;
+
+			if (newPageInput) pageEl.value = newPageInput.value || pageEl.value;
+			if (newLimitInput) limitEl.value = newLimitInput.value || limitEl.value;
+
+			if (typeof window.initSwipers === 'function') window.initSwipers();
+
+			if (scrollTop) window.scrollTo({ top: 0, behavior: 'smooth' });
 		} catch (err) {
 			if (err && err.name === 'AbortError') return;
 			console.log(err);
@@ -136,12 +103,12 @@
 		}
 	}
 
-	/* EVENTS */
+	/* SEARCH */
 	if (qInput) {
 		qInput.addEventListener('input', () => {
 			clearTimeout(t);
 			t = setTimeout(() => {
-				page = 1;
+				setPage(1);
 				ajaxRefresh();
 			}, 300);
 		});
@@ -150,21 +117,46 @@
 			if (e.key === 'Enter') {
 				clearTimeout(t);
 				e.preventDefault();
-				page = 1;
+				setPage(1);
 				ajaxRefresh();
 			}
 		});
 	}
 
+	/* SELECTS */
 	selects.forEach((s) => {
 		s.addEventListener('change', () => {
 			clearTimeout(t);
-			page = 1;
+			setPage(1);
 			ajaxRefresh();
 		});
 	});
 
-	/* CLEAR FILTERS */
+	/* PREV/NEXT (delegation) */
+	document.addEventListener('click', (e) => {
+		const prev = e.target.closest('#pgPrev');
+		const next = e.target.closest('#pgNext');
+		if (!prev && !next) return;
+
+		e.preventDefault();
+
+		const cur = Number(pageEl.value || 1);
+
+		if (prev) {
+			if (prev.disabled) return;
+			setPage(cur - 1);
+			ajaxRefresh({ scrollTop: true });
+			return;
+		}
+
+		if (next) {
+			if (next.disabled) return;
+			setPage(cur + 1);
+			ajaxRefresh({ scrollTop: true });
+		}
+	});
+
+	/* CLEAR */
 	const clearBtn = document.getElementById('clearFilters');
 	if (clearBtn) {
 		clearBtn.addEventListener('click', () => {
@@ -175,14 +167,11 @@
 				if (s.name === 'sort') s.value = 'newest';
 			});
 
-			// ✅ action qayer bo‘lsa, o‘sha yerga tozalab qaytadi
-			const action = form.getAttribute('action') || '/products';
-			history.replaceState({}, '', action);
+			setPage(1);
+			limitEl.value = '8';
 
-			page = 1;
-			ajaxRefresh();
+			history.replaceState({}, '', getAction());
+			ajaxRefresh({ scrollTop: true });
 		});
 	}
-
-	initPagination(true);
 })();

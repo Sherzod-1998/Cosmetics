@@ -110,11 +110,21 @@ productController.getPublicProducts = async (req: Request, res: Response) => {
 		const tag = String(req.query.tag || 'ALL');
 		const sort = String(req.query.sort || 'newest');
 
-		const products = await productService.getPublicProducts({ q, tag, sort });
+		// ✅ pagination query
+		const page = Math.max(1, Number(req.query.page || 1));
+		const limit = Math.max(1, Math.min(50, Number(req.query.limit || 8)));
+
+		const result = await productService.getPublicProducts({ q, tag, sort, page, limit });
 
 		return res.render('public/products', {
-			products,
+			products: result.items,
+			total: result.total,
+			page: result.page,
+			limit: result.limit,
+			totalPages: result.totalPages,
+
 			filters: { q, tag, sort },
+
 			productTagsEnum: Object.values(ProductTag),
 			productTagLabels: PRODUCT_TAG_LABELS,
 		});
@@ -123,7 +133,6 @@ productController.getPublicProducts = async (req: Request, res: Response) => {
 		return res.status(500).send('Server error');
 	}
 };
-
 productController.recommendProducts = async (req: Request, res: Response) => {
 	try {
 		const { productId } = req.params;

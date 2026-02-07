@@ -46,10 +46,14 @@ class ProductService {
 		return result;
 	}
 
-	public async getPublicProducts(inquiry?: { q?: string; tag?: string; sort?: string }) {
+	public async getPublicProducts(inquiry?: { q?: string; tag?: string; sort?: string; page?: number; limit?: number }) {
 		const q = inquiry?.q?.trim() || '';
 		const tag = inquiry?.tag || 'ALL';
 		const sort = inquiry?.sort || 'newest';
+
+		const page = Math.max(1, Number(inquiry?.page || 1));
+		const limit = Math.max(1, Math.min(50, Number(inquiry?.limit || 8)));
+		const skip = (page - 1) * limit;
 
 		const filter: any = { productStatus: ProductStatus.PROCESS };
 
@@ -68,8 +72,25 @@ class ProductService {
 		if (sort === 'name_asc') sortQuery = { productName: 1 };
 		if (sort === 'name_desc') sortQuery = { productName: -1 };
 
-		// ✅ typescript muammo bo‘lmasin:
-		return await this.productModel.find(filter).sort(sortQuery).lean().exec();
+		const [total, items] = await Promise.all([
+			this.productModel.countDocuments(filter).exec(),
+			this.productModel.find(filter).sort(sortQuery).skip(skip).limit(limit).lean().exec(),
+		]);
+
+		const totalPages = Math.max(1, Math.ceil(total / limit));
+
+		// ✅ agar user page=999 yuborsa ham to'g'ri qilib qaytaramiz
+		const safePage = Math.min(page, totalPages);
+
+		// agar safePage o'zgargan bo'lsa qayta olib kelamiz (ixtiyoriy, lekin yaxshi)
+		if (safePage !== page) {
+			const safeSkip = (safePage - 1) * limit;
+			const safeItems = await this.productModel.find(filter).sort(sortQuery).skip(safeSkip).limit(limit).lean().exec();
+
+			return { items: safeItems, total, page: safePage, limit, totalPages };
+		}
+
+		return { items, total, page, limit, totalPages };
 	}
 
 	public async getProduct(memberId: ObjectId | null, id: string): Promise<Product> {
