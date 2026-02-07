@@ -1,4 +1,5 @@
-import { ObjectId } from 'mongoose';
+// mongoose dan Types ni import qiling
+import mongoose, { Types } from 'mongoose';
 import { Order, OrderInquiry, OrderItemInput, OrderUpdateInput } from '../libs/types/order';
 import Errors, { HttpCode, Message } from '../libs/Errors';
 import { Member } from '../libs/types/member';
@@ -22,34 +23,32 @@ class OrderService {
 	public async createOrder(member: Member, input: OrderItemInput[]): Promise<Order> {
 		const memberId = shapeIntoMongooseObjectId(member._id);
 		const amount = input.reduce((accumulator, item) => {
-			console.log('Processing Item:', item);
-			console.log(`Price: ${item.itemPrice}, Quantity: ${item.itemQuantity}`);
-
 			return accumulator + item.itemPrice * item.itemQuantity;
 		}, 0);
 
 		const delivery = amount < 100 ? 5 : 0;
 
 		try {
-			// Order yaratish
 			const newOrder = await this.orderModel.create({
-				orderTotal: amount + delivery, // amount = 787, delivery = 0, kutilgan natija: 787
+				orderTotal: amount + delivery,
 				orderDelivery: delivery,
 				memberId: memberId,
 			});
 
-			const orderId = newOrder._id;
-			console.log('orderId', orderId);
+			// XATOLIKNI TUZATISH: recordOrderItem chaqirig'i
+			const orderId = newOrder._id as any;
 			await this.recordOrderItem(orderId, input);
 
-			return newOrder;
+			// XATOLIKNI TUZATISH: 'as Order' cast qilish
+			return newOrder as unknown as Order;
 		} catch (err) {
 			console.log('Error, model: createOrder:', err);
-			throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED); // Xato yuzaga keldi
+			throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
 		}
 	}
 
-	private async recordOrderItem(orderId: ObjectId, input: OrderItemInput[]): Promise<void> {
+	// XATOLIKNI TUZATISH: Parametr turini any qildik
+	private async recordOrderItem(orderId: any, input: OrderItemInput[]): Promise<void> {
 		const promisedList = input.map(async (item: OrderItemInput) => {
 			item.orderId = orderId;
 			item.productId = shapeIntoMongooseObjectId(item.productId);
@@ -57,11 +56,7 @@ class OrderService {
 			return 'INSERTED';
 		});
 
-		console.log('promisedList:', promisedList);
-
-		const orderItemsState = await Promise.all(promisedList);
-
-		console.log('orderItemsState:', orderItemsState);
+		await Promise.all(promisedList);
 	}
 
 	public async getMyOrders(member: Member, inquiry: OrderInquiry): Promise<Order[]> {
@@ -97,7 +92,8 @@ class OrderService {
 			throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 		}
 
-		return result;
+		// XATOLIKNI TUZATISH: 'as Order[]' cast qilish
+		return result as Order[];
 	}
 
 	public async updateOrder(member: Member, input: OrderUpdateInput): Promise<Order> {
@@ -110,10 +106,13 @@ class OrderService {
 			.exec();
 
 		if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
+
 		if (orderStatus === OrderStatus.PROCESS) {
 			await this.memberService.addUserPoint(member, 1);
 		}
-		return result;
+
+		// XATOLIKNI TUZATISH: 'as Order' cast qilish
+		return result as unknown as Order;
 	}
 }
 

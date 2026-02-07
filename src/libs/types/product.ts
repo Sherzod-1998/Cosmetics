@@ -5,13 +5,12 @@ type ObjectId = Types.ObjectId;
 export interface Product {
 	_id: ObjectId;
 	productStatus: ProductStatus;
-	productCollection: ProductCollection;
+	productCollection?: ProductCollection; // schema'da required false edi
 	productName: string;
 	productPrice: number;
-	productLeftCount: number;
 	productDesc?: string;
 	productImages: string[];
-	productView: number;
+	productViews: number; // ✅ schema bilan bir xil
 	createdAt: Date;
 	updatedAt: Date;
 }

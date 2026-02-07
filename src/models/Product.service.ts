@@ -75,32 +75,32 @@ class ProductService {
 	public async getProduct(memberId: ObjectId | null, id: string): Promise<Product> {
 		const productId = shapeIntoMongooseObjectId(id);
 
-		let result = await this.productModel.findOne({ _id: productId, ProductStatus: ProductStatus.PROCESS }).exec();
+		let result = await this.productModel.findOne({ _id: productId, productStatus: ProductStatus.PROCESS }).exec();
 
 		if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
 		if (memberId) {
-			// check view log existance
 			const input: ViewInput = {
-				memberId: memberId,
+				memberId,
 				viewRefId: productId,
 				viewGroup: ViewGroup.PRODUCT,
 			};
+
 			const existView = await this.viewService.checkViewExistence(input);
 
-			console.log('exist:', !!existView);
 			if (!existView) {
-				// Insert New View Log
 				await this.viewService.insertMemberView(input);
 
-				//Increase Counts
-				result = await this.productModel
-					.findByIdAndUpdate(productId, { $inc: { productViews: +1 } }, { new: true })
+				const updated = await this.productModel
+					.findByIdAndUpdate(productId, { $inc: { productViews: 1 } }, { new: true })
 					.exec();
+
+				if (!updated) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+				result = updated;
 			}
 		}
 
-		return result;
+		return result as any;
 	}
 
 	public async getRecommendedProducts(productId: string): Promise<LeanDocument<Product>[]> {

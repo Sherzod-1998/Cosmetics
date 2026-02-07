@@ -6,6 +6,7 @@ import { AdminRequest, ExtendedRequest } from '../libs/types/member';
 import { ProductInput, ProductInquiry } from '../libs/types/product';
 import { ProductCollection, ProductStatus, ProductTag } from '../libs/enums/product.enum';
 import { PRODUCT_TAG_LABELS } from '../libs/constants/productTagLabels';
+import { shapeIntoMongooseObjectId } from '../libs/config';
 
 const productService = new ProductService();
 
@@ -57,7 +58,9 @@ productController.getProduct = async (req: ExtendedRequest, res: Response) => {
 		const { id } = req.params;
 
 		const memberId = req.member?._id ?? null;
-		const result = await productService.getProduct(memberId, id);
+		const memberObjectId = memberId ? shapeIntoMongooseObjectId(memberId) : null;
+		const result = await productService.getProduct(memberObjectId, id);
+
 		res.status(HttpCode.OK).json(result);
 	} catch (err) {
 		console.log('Error, getProduct:', err);
