@@ -1,366 +1,355 @@
 <%- include('includes/header') %>
-  <link rel="stylesheet" type="text/css" href="/css/products.css" />
+<link rel="stylesheet" type="text/css" href="/css/products.css" />
 
-  <body>
-    <div class="page">
-      <!-- TOP NAV -->
-      <header class="topbar">
-        <div class="brand">
-          <div class="logo">N</div>
-          <div class="brand-txt">
-            <div class="brand-title">Admin panel</div>
-            <div class="brand-sub">Mahsulotlar boshqaruvi</div>
+<%
+  // ✅ TAGLARNI LABEL BO'YICHA (ALFAVIT) SARALASH
+  const sortedTags = (productTagsEnum || []).slice().sort((a, b) => {
+    const la = (productTagLabels?.[a] || a).toString();
+    const lb = (productTagLabels?.[b] || b).toString();
+    return la.localeCompare(lb, 'uz');
+  });
+%>
+
+<body>
+  <div class="page">
+    <!-- TOP NAV -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">N</div>
+        <div class="brand-txt">
+          <div class="brand-title">Admin panel</div>
+          <div class="brand-sub">Mahsulotlar boshqaruvi</div>
+        </div>
+      </div>
+
+      <nav class="navlinks">
+        <a class="navlink" href="/admin/">Bosh sahifa</a>
+        <a class="navlink active" href="/admin/product/all">Mahsulotlar</a>
+        <a class="navlink" href="/admin/user/all">Foydalanuvchilar</a>
+        <a class="navlink danger" href="/admin/logout"
+          onclick="return confirm('Rostdan ham chiqmoqchimisiz?')">Chiqish</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <!-- HEADER ACTIONS -->
+      <section class="hero">
+        <div>
+          <h1>Mahsulotlar</h1>
+          <p>Mahsulot qo‘shing, tahrir qiling, teglar belgilang, holatini boshqaring.</p>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="openCreateBtn" type="button">+ Yangi mahsulot</button>
+        </div>
+      </section>
+
+      <!-- FILTER BAR (PC) -->
+      <section class="card">
+        <form class="filterform" method="GET" action="/admin/product/all">
+          <div class="fgroup">
+            <label>Qidirish</label>
+            <input class="finput" type="text" name="q" value="<%= filters?.q || '' %>"
+              placeholder="Masalan: Cledbel" />
+          </div>
+
+          <div class="fgroup">
+            <label>Teg</label>
+            <select class="fselect" name="tag">
+              <option value="ALL" <%=(filters?.tag==='ALL' )?'selected':'' %>>Barchasi</option>
+
+              <!-- ✅ SORT QILINGAN TAGLAR -->
+              <% (sortedTags || []).forEach(function(t){ %>
+                <option value="<%= t %>" <%=(filters?.tag===t)?'selected':'' %>>
+                  <%= productTagLabels?.[t] || t %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="fgroup">
+            <label>Saralash</label>
+            <select class="fselect" name="sort">
+              <option value="newest" <%=(filters?.sort==='newest' )?'selected':'' %>>Eng yangi</option>
+              <option value="oldest" <%=(filters?.sort==='oldest' )?'selected':'' %>>Eng eski</option>
+              <option value="price_asc" <%=(filters?.sort==='price_asc' )?'selected':'' %>>Narx (↑)</option>
+              <option value="price_desc" <%=(filters?.sort==='price_desc' )?'selected':'' %>>Narx (↓)</option>
+              <option value="name_asc" <%=(filters?.sort==='name_asc' )?'selected':'' %>>Nom (A→Z)</option>
+              <option value="name_desc" <%=(filters?.sort==='name_desc' )?'selected':'' %>>Nom (Z→A)</option>
+            </select>
+          </div>
+
+          <div class="fgroup">
+            <label>Rasm</label>
+            <select class="fselect" name="hasImage">
+              <option value="ALL" <%=(filters?.hasImage==='ALL' ) ? 'selected' : '' %>>Barchasi</option>
+              <option value="YES" <%=(filters?.hasImage==='YES' ) ? 'selected' : '' %>>Rasm bor</option>
+              <option value="NO" <%=(filters?.hasImage==='NO' ) ? 'selected' : '' %>>Rasm yo‘q</option>
+            </select>
+          </div>
+
+          <div class="fgroup">
+            <label>Holat</label>
+            <select class="fselect" name="status">
+              <option value="ALL" <%=(filters?.status==='ALL' ) ? 'selected' : '' %>>Barchasi</option>
+              <option value="PROCESS" <%=(filters?.status==='PROCESS' ) ? 'selected' : '' %>>FAOL</option>
+              <option value="PAUSE" <%=(filters?.status==='PAUSE' ) ? 'selected' : '' %>>TO‘XTATILGAN</option>
+              <option value="DELETE" <%=(filters?.status==='DELETE' ) ? 'selected' : '' %>>O‘CHIRILGAN</option>
+            </select>
+          </div>
+
+          <div class="factions">
+            <button class="btn btn-primary" type="submit">Qo‘llash</button>
+            <a class="btn btn-ghost" href="/admin/product/all">Tozalash</a>
+          </div>
+        </form>
+      </section>
+
+      <!-- DESKTOP TABLE -->
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title">Ro‘yxat</div>
+          <div class="card-note">
+            <%= products?.length || 0 %> ta mahsulot
           </div>
         </div>
 
-        <nav class="navlinks">
-          <a class="navlink" href="/admin/">Bosh sahifa</a>
-          <a class="navlink active" href="/admin/product/all">Mahsulotlar</a>
-          <a class="navlink" href="/admin/user/all">Foydalanuvchilar</a>
-          <a class="navlink danger" href="/admin/logout"
-            onclick="return confirm('Rostdan ham chiqmoqchimisiz?')">Chiqish</a>
-        </nav>
-      </header>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width:70px">T/r</th>
+                <th>Mahsulot nomi</th>
+                <th style="width:120px">Narxi</th>
+                <th>Teglar</th>
+                <th style="width:110px">Rasm</th>
+                <th style="width:220px">Holat / Amallar</th>
+              </tr>
+            </thead>
 
-      <main class="container">
-        <!-- HEADER ACTIONS -->
-        <section class="hero">
-          <div>
-            <h1>Mahsulotlar</h1>
-            <p>Mahsulot qo‘shing, tahrir qiling, teglar belgilang, holatini boshqaring.</p>
-          </div>
+            <tbody>
+              <% if (products && products.length) { %>
+                <% products.forEach(function(p, idx){ %>
+                  <tr>
+                    <td class="muted"><%= idx + 1 %></td>
 
-          <div class="hero-actions">
-            <button class="btn btn-primary" id="openCreateBtn" type="button">+ Yangi mahsulot</button>
-          </div>
-        </section>
-
-        <!-- FILTER BAR (PC) -->
-        <section class="card">
-          <form class="filterform" method="GET" action="/admin/product/all">
-            <div class="fgroup">
-              <label>Qidirish</label>
-              <input class="finput" type="text" name="q" value="<%= filters?.q || '' %>"
-                placeholder="Masalan: Cledbel" />
-            </div>
-
-            <div class="fgroup">
-              <label>Teg</label>
-              <select class="fselect" name="tag">
-                <option value="ALL" <%=(filters?.tag==='ALL' )?'selected':'' %>>Barchasi</option>
-                <% (productTagsEnum || []).forEach(function(t){ %>
-                  <option value="<%= t %>" <%=(filters?.tag===t)?'selected':'' %>>
-                    <%= productTagLabels?.[t] || t %>
-                  </option>
-                  <% }) %>
-              </select>
-            </div>
-
-            <div class="fgroup">
-              <label>Saralash</label>
-              <select class="fselect" name="sort">
-                <option value="newest" <%=(filters?.sort==='newest' )?'selected':'' %>>Eng yangi</option>
-                <option value="oldest" <%=(filters?.sort==='oldest' )?'selected':'' %>>Eng eski</option>
-                <option value="price_asc" <%=(filters?.sort==='price_asc' )?'selected':'' %>>Narx (↑)</option>
-                <option value="price_desc" <%=(filters?.sort==='price_desc' )?'selected':'' %>>Narx (↓)</option>
-                <option value="name_asc" <%=(filters?.sort==='name_asc' )?'selected':'' %>>Nom (A→Z)</option>
-                <option value="name_desc" <%=(filters?.sort==='name_desc' )?'selected':'' %>>Nom (Z→A)</option>
-              </select>
-            </div>
-
-            <div class="fgroup">
-              <label>Rasm</label>
-              <select class="fselect" name="hasImage">
-                <option value="ALL" <%=(filters?.hasImage==='ALL' ) ? 'selected' : '' %>>Barchasi</option>
-                <option value="YES" <%=(filters?.hasImage==='YES' ) ? 'selected' : '' %>>Rasm bor</option>
-                <option value="NO" <%=(filters?.hasImage==='NO' ) ? 'selected' : '' %>>Rasm yo‘q</option>
-              </select>
-            </div>
-
-
-            <div class="fgroup">
-              <label>Holat</label>
-              <select class="fselect" name="status">
-                <option value="ALL" <%=(filters?.status==='ALL' ) ? 'selected' : '' %>>Barchasi</option>
-                <option value="PROCESS" <%=(filters?.status==='PROCESS' ) ? 'selected' : '' %>>FAOL</option>
-                <option value="PAUSE" <%=(filters?.status==='PAUSE' ) ? 'selected' : '' %>>TO‘XTATILGAN</option>
-                <option value="DELETE" <%=(filters?.status==='DELETE' ) ? 'selected' : '' %>>O‘CHIRILGAN</option>
-              </select>
-            </div>
-
-
-
-            <div class="factions">
-              <button class="btn btn-primary" type="submit">Qo‘llash</button>
-              <a class="btn btn-ghost" href="/admin/product/all">Tozalash</a>
-            </div>
-          </form>
-        </section>
-
-        <!-- DESKTOP TABLE -->
-        <section class="card">
-          <div class="card-head">
-            <div class="card-title">Ro‘yxat</div>
-            <div class="card-note">
-              <%= products?.length || 0 %> ta mahsulot
-            </div>
-          </div>
-
-          <div class="table-wrap">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th style="width:70px">T/r</th>
-                  <th>Mahsulot nomi</th>
-                  <th style="width:120px">Narxi</th>
-                  <th>Teglar</th>
-                  <th style="width:110px">Rasm</th>
-                  <th style="width:220px">Holat / Amallar</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                <% if (products && products.length) { %>
-                  <% products.forEach(function(p, idx){ %>
-                    <tr>
-                      <td class="muted">
-                        <%= idx + 1 %>
-                      </td>
-
-                      <td>
-                        <div class="nameCell">
-                          <div class="nameMain">
-                            <%= p.productName %>
-                          </div>
-                          <% if (p.productDesc) { %>
-                            <div class="nameSub">
-                              <%= p.productDesc %>
-                            </div>
-                            <% } %>
-                        </div>
-                      </td>
-
-                      <td><span class="price">
-                          <%= p.productPrice %>
-                        </span></td>
-
-                      <td>
-                        <% if (p.productTags && p.productTags.length) { %>
-                          <div class="tags">
-                            <% p.productTags.forEach(function(t){ %>
-                              <span class="tag">
-                                <%= (productTagLabels && productTagLabels[t]) ? productTagLabels[t] : t %>
-                              </span>
-                              <% }) %>
-                          </div>
-                          <% } else { %>
-                            <span class="muted">-</span>
-                            <% } %>
-                      </td>
-
-                      <td>
-                        <% if (p.productImages && p.productImages.length) { 
-     const raw = p.productImages[0];
-     const src = raw.startsWith('http') ? raw : (raw.startsWith('/') ? raw : '/' + raw);
-%>
-  <img class="thumb" src="<%= src %>" alt="Rasm"
-    onerror="this.outerHTML='<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
-<% } else { %>
-  <span class="muted">Rasm yo‘q</span>
-<% } %>
-
-                      </td>
-
-                      <td>
-                        <div class="row-actions">
-                          <select class="select new-product-status" id="<%= p._id %>">
-                            <option value="PAUSE" <%=p.productStatus==='PAUSE' ? 'selected' : '' %>>TO‘XTATILGAN
-                            </option>
-                            <option value="PROCESS" <%=p.productStatus==='PROCESS' ? 'selected' : '' %>>FAOL</option>
-                            <option value="DELETE" <%=p.productStatus==='DELETE' ? 'selected' : '' %>>O‘CHIRILGAN
-                            </option>
-                          </select>
-
-                          <button class="btn btn-ghost btn-sm" type="button"
-                            data-product="<%= encodeURIComponent(JSON.stringify(p)) %>" onclick="openEditFromBtn(this)"
-                            title="Tahrirlash">✏️</button>
-
-                          <button class="btn btn-danger btn-sm js-delete-product" type="button" data-id="<%= p._id %>"
-                            data-name="<%= p.productName %>" title="O‘chirish">🗑</button>
-
-
-                        </div>
-                      </td>
-                    </tr>
-                    <% }) %>
-                      <% } else { %>
-                        <tr>
-                          <td colspan="6" class="empty">Hozircha mahsulot yo‘q.</td>
-                        </tr>
+                    <td>
+                      <div class="nameCell">
+                        <div class="nameMain"><%= p.productName %></div>
+                        <% if (p.productDesc) { %>
+                          <div class="nameSub"><%= p.productDesc %></div>
                         <% } %>
-              </tbody>
-            </table>
+                      </div>
+                    </td>
+
+                    <td><span class="price"><%= p.productPrice %></span></td>
+
+                    <td>
+                      <% if (p.productTags && p.productTags.length) { %>
+                        <div class="tags">
+                          <% p.productTags.forEach(function(t){ %>
+                            <span class="tag">
+                              <%= (productTagLabels && productTagLabels[t]) ? productTagLabels[t] : t %>
+                            </span>
+                          <% }) %>
+                        </div>
+                      <% } else { %>
+                        <span class="muted">-</span>
+                      <% } %>
+                    </td>
+
+                    <td>
+                      <% if (p.productImages && p.productImages.length) { 
+                        const raw = p.productImages[0];
+                        const src = raw.startsWith('http') ? raw : (raw.startsWith('/') ? raw : '/' + raw);
+                      %>
+                        <img class="thumb" src="<%= src %>" alt="Rasm"
+                          onerror="this.outerHTML='<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
+                      <% } else { %>
+                        <span class="muted">Rasm yo‘q</span>
+                      <% } %>
+                    </td>
+
+                    <td>
+                      <div class="row-actions">
+                        <select class="select new-product-status" id="<%= p._id %>">
+                          <option value="PAUSE" <%=p.productStatus==='PAUSE' ? 'selected' : '' %>>TO‘XTATILGAN</option>
+                          <option value="PROCESS" <%=p.productStatus==='PROCESS' ? 'selected' : '' %>>FAOL</option>
+                          <option value="DELETE" <%=p.productStatus==='DELETE' ? 'selected' : '' %>>O‘CHIRILGAN</option>
+                        </select>
+
+                        <button class="btn btn-ghost btn-sm" type="button"
+                          data-product="<%= encodeURIComponent(JSON.stringify(p)) %>"
+                          onclick="openEditFromBtn(this)" title="Tahrirlash">✏️</button>
+
+                        <button class="btn btn-danger btn-sm js-delete-product" type="button"
+                          data-id="<%= p._id %>" data-name="<%= p.productName %>" title="O‘chirish">🗑</button>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="empty">Hozircha mahsulot yo‘q.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CREATE FORM -->
+      <section class="card create" id="createBox">
+        <div class="card-head">
+          <div class="card-title">Yangi mahsulot</div>
+          <button class="btn btn-ghost" id="closeCreateBtn" type="button">Yopish</button>
+        </div>
+
+        <form onsubmit="return validateCreateForm()" action="/admin/product/create" method="POST"
+          enctype="multipart/form-data" class="form">
+          <input name="productStatus" value="PAUSE" hidden />
+
+          <div class="grid2">
+            <div class="field">
+              <label>Mahsulot nomi</label>
+              <input name="productName" placeholder="Masalan: Collagen krem" required />
+            </div>
+
+            <div class="field">
+              <label>Narxi</label>
+              <input type="number" name="productPrice" placeholder="Masalan: 75000" min="0" required />
+            </div>
           </div>
-        </section>
 
-        <!-- CREATE FORM -->
-        <section class="card create" id="createBox">
-          <div class="card-head">
-            <div class="card-title">Yangi mahsulot</div>
-            <button class="btn btn-ghost" id="closeCreateBtn" type="button">Yopish</button>
+          <div class="field">
+            <label>Teglar (bir nechta tanlash mumkin)</label>
+            <div class="tagsGrid">
+              <!-- ✅ SORT QILINGAN TAGLAR -->
+              <% (sortedTags || []).forEach(function(tag){ %>
+                <label class="tagCheck">
+                  <input type="checkbox" name="productTags" value="<%= tag %>" />
+                  <span><%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %></span>
+                </label>
+              <% }) %>
+            </div>
           </div>
 
-          <form onsubmit="return validateCreateForm()" action="/admin/product/create" method="POST"
-            enctype="multipart/form-data" class="form">
-            <input name="productStatus" value="PAUSE" hidden />
+          <div class="field">
+            <label>Tavsif</label>
+            <textarea name="productDesc" placeholder="Ixtiyoriy..."></textarea>
+          </div>
 
-            <div class="grid2">
-              <div class="field">
-                <label>Mahsulot nomi</label>
-                <input name="productName" placeholder="Masalan: Collagen krem" required />
-              </div>
-
-              <div class="field">
-                <label>Narxi</label>
-                <input type="number" name="productPrice" placeholder="Masalan: 75000" min="0" required />
-              </div>
-            </div>
-
-            <div class="field">
-              <label>Teglar (bir nechta tanlash mumkin)</label>
-              <div class="tagsGrid">
-                <% (productTagsEnum || []).forEach(function(tag){ %>
-                  <label class="tagCheck">
-                    <input type="checkbox" name="productTags" value="<%= tag %>" />
-                    <span>
-                      <%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %>
-                    </span>
-                  </label>
-                  <% }) %>
-              </div>
-            </div>
-
-            <div class="field">
-              <label>Tavsif</label>
-              <textarea name="productDesc" placeholder="Ixtiyoriy..."></textarea>
-            </div>
-
-            <div class="field">
-              <label>Rasmlar (1-rasm majburiy)</label>
-              <div class="uploadRow">
-                <% for (let i=1; i<=5; i++) { %>
-                  <div class="uploadBox">
-                    <img src="/img/upload.svg" id="image-section-<%= i %>" alt="upload" />
-                    <input type="file" name="productImages" <%=i===1 ? 'required' : '' %>
+          <div class="field">
+            <label>Rasmlar (1-rasm majburiy)</label>
+            <div class="uploadRow">
+              <% for (let i=1; i<=5; i++) { %>
+                <div class="uploadBox">
+                  <img src="/img/upload.svg" id="image-section-<%= i %>" alt="upload" />
+                  <input type="file" name="productImages" <%=i===1 ? 'required' : '' %>
                     accept="image/*" onchange="previewFileHandler(this, <%= i %>)" />
-                  </div>
-                  <% } %>
-              </div>
-              <div class="hint">Eslatma: birinchi rasm majburiy, qolganlari ixtiyoriy.</div>
+                </div>
+              <% } %>
             </div>
+            <div class="hint">Eslatma: birinchi rasm majburiy, qolganlari ixtiyoriy.</div>
+          </div>
 
-            <div class="formActions">
-              <button class="btn btn-danger" id="cancel-btn" type="button">Bekor qilish</button>
-              <button class="btn btn-primary" type="submit">Saqlash</button>
-            </div>
-          </form>
-        </section>
+          <div class="formActions">
+            <button class="btn btn-danger" id="cancel-btn" type="button">Bekor qilish</button>
+            <button class="btn btn-primary" type="submit">Saqlash</button>
+          </div>
+        </form>
+      </section>
 
-        <!-- EDIT MODAL (same page) -->
-        <!-- EDIT MODAL BACKDROP -->
-        <div class="modal-backdrop" id="editBackdrop"></div>
+      <!-- EDIT MODAL (same page) -->
+      <div class="modal-backdrop" id="editBackdrop"></div>
 
-        <section class="card create" id="editBox">
+      <section class="card create" id="editBox">
+        <form id="editForm" class="form" enctype="multipart/form-data">
+          <input type="hidden" name="productStatus" id="editStatus" value="PAUSE" />
 
-
-          <form id="editForm" class="form" enctype="multipart/form-data">
-            <input type="hidden" name="productStatus" id="editStatus" value="PAUSE" />
-
-            <div class="grid2">
-              <div class="field">
-                <label>Mahsulot nomi</label>
-                <input name="productName" id="editName" required />
-              </div>
-
-              <div class="field">
-                <label>Narxi</label>
-                <input type="number" name="productPrice" id="editPrice" min="0" required />
-              </div>
+          <div class="grid2">
+            <div class="field">
+              <label>Mahsulot nomi</label>
+              <input name="productName" id="editName" required />
             </div>
 
             <div class="field">
-              <label>Teglar</label>
-              <div class="tagsGrid" id="editTagsGrid">
-                <% (productTagsEnum || []).forEach(function(tag){ %>
-                  <label class="tagCheck">
-                    <input type="checkbox" name="productTags" value="<%= tag %>" />
-                    <span>
-                      <%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %>
-                    </span>
-                  </label>
-                  <% }) %>
-              </div>
+              <label>Narxi</label>
+              <input type="number" name="productPrice" id="editPrice" min="0" required />
             </div>
+          </div>
 
-            <div class="field">
-              <label>Tavsif</label>
-              <textarea name="productDesc" id="editDesc" placeholder="Ixtiyoriy..."></textarea>
+          <div class="field">
+            <label>Teglar</label>
+            <div class="tagsGrid" id="editTagsGrid">
+              <!-- ✅ SORT QILINGAN TAGLAR -->
+              <% (sortedTags || []).forEach(function(tag){ %>
+                <label class="tagCheck">
+                  <input type="checkbox" name="productTags" value="<%= tag %>" />
+                  <span><%= (productTagLabels && productTagLabels[tag]) ? productTagLabels[tag] : tag %></span>
+                </label>
+              <% }) %>
             </div>
+          </div>
 
-            <div class="field">
-              <label>Hozirgi rasmlar (ko‘rish uchun)</label>
-              <div class="existingRow" id="existingImages"></div>
-              <div class="hint">Eslatma: hozircha eski rasmlar avtomatik saqlanadi...</div>
+          <div class="field">
+            <label>Tavsif</label>
+            <textarea name="productDesc" id="editDesc" placeholder="Ixtiyoriy..."></textarea>
+          </div>
+
+          <div class="field">
+            <label>Hozirgi rasmlar (ko‘rish uchun)</label>
+            <div class="existingRow" id="existingImages"></div>
+            <div class="hint">Eslatma: hozircha eski rasmlar avtomatik saqlanadi...</div>
+          </div>
+
+          <div class="field">
+            <label>Yangi rasmlar (0–5 ta)</label>
+            <div class="uploadRow">
+              <% for (let i=1; i<=5; i++) { %>
+                <div class="uploadBox">
+                  <img src="/img/upload.svg" id="edit-image-<%= i %>" alt="upload" />
+                  <input type="file" name="productImage" accept="image/*"
+                    onchange="previewEditImage(this, <%= i %>)" />
+                </div>
+              <% } %>
             </div>
+          </div>
 
-            <div class="field">
-              <label>Yangi rasmlar (0–5 ta)</label>
-              <div class="uploadRow">
-                <% for (let i=1; i<=5; i++) { %>
-                  <div class="uploadBox">
-                    <img src="/img/upload.svg" id="edit-image-<%= i %>" alt="upload" />
-                    <input type="file" name="productImage" accept="image/*"
-                      onchange="previewEditImage(this, <%= i %>)" />
-                  </div>
-                  <% } %>
-              </div>
-            </div>
+          <div class="formActions">
+            <button class="btn btn-danger" id="cancelEditBtn" type="button">Bekor qilish</button>
+            <button class="btn btn-primary" type="submit">Yangilash</button>
+          </div>
+        </form>
+      </section>
+  </div>
 
-            <div class="formActions">
-              <button class="btn btn-danger" id="cancelEditBtn" type="button">Bekor qilish</button>
-              <button class="btn btn-primary" type="submit">Yangilash</button>
-            </div>
-          </form>
-        </section>
-    </div>
+  </main>
+  </div>
 
+  <script type="text/javascript" src="/js/products.js"></script>
 
-    </main>
-    </div>
+  <!-- faqat create toggle qoladi -->
+  <script>
+    (function () {
+      const openCreateBtn = document.getElementById('openCreateBtn');
+      const closeCreateBtn = document.getElementById('closeCreateBtn');
+      const createBox = document.getElementById('createBox');
+      const cancelBtn = document.getElementById('cancel-btn');
 
-    <script type="text/javascript" src="/js/products.js"></script>
+      function openCreate() {
+        createBox.classList.add('open');
+        createBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      function closeCreate() {
+        createBox.classList.remove('open');
+      }
 
-    <!-- faqat create toggle qoladi -->
-    <script>
-      (function () {
-        const openCreateBtn = document.getElementById('openCreateBtn');
-        const closeCreateBtn = document.getElementById('closeCreateBtn');
-        const createBox = document.getElementById('createBox');
-        const cancelBtn = document.getElementById('cancel-btn');
+      if (openCreateBtn) openCreateBtn.addEventListener('click', openCreate);
+      if (closeCreateBtn) closeCreateBtn.addEventListener('click', closeCreate);
+      if (cancelBtn) cancelBtn.addEventListener('click', closeCreate);
+    })();
+  </script>
+</body>
 
-        function openCreate() {
-          createBox.classList.add('open');
-          createBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        function closeCreate() {
-          createBox.classList.remove('open');
-        }
-
-        if (openCreateBtn) openCreateBtn.addEventListener('click', openCreate);
-        if (closeCreateBtn) closeCreateBtn.addEventListener('click', closeCreate);
-        if (cancelBtn) cancelBtn.addEventListener('click', closeCreate);
-      })();
-    </script>
-  </body>
-
-  <%- include('includes/footer') %>
+<%- include('includes/footer') %>
