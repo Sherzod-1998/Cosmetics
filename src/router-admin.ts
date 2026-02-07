@@ -28,10 +28,19 @@ routerAdmin.post("/product/create",
     makeUploader("products").array("productImages", 5),
     productController.createNewProduct);
 
-routerAdmin.post('/product/:id',
-     sellerController.verifySeller, 
-     makeUploader("products").array("productImage", 5),
-     productController.updateChosenProduct);
+routerAdmin.post(
+  '/product/:id',
+  sellerController.verifySeller,
+  makeUploader('products').fields([
+    { name: 'productImage0', maxCount: 1 },
+    { name: 'productImage1', maxCount: 1 },
+    { name: 'productImage2', maxCount: 1 },
+    { name: 'productImage3', maxCount: 1 },
+    { name: 'productImage4', maxCount: 1 },
+  ]),
+  productController.updateChosenProduct
+);
+
 
 routerAdmin.delete(
   '/product/:id',
@@ -44,7 +53,7 @@ routerAdmin.get(
     sellerController.verifySeller, 
     sellerController.getUsers);
 
-    routerAdmin.post(
+routerAdmin.post(
         "/user/edit", 
         sellerController.verifySeller, 
         sellerController.updateChosenUser);

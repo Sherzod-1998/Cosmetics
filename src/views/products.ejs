@@ -2,11 +2,11 @@
 <link rel="stylesheet" type="text/css" href="/css/products.css" />
 
 <%
-  // ✅ TAGLARNI LABEL BO'YICHA (ALFAVIT) SARALASH
-  const sortedTags = (productTagsEnum || []).slice().sort((a, b) => {
-    const la = (productTagLabels?.[a] || a).toString();
-    const lb = (productTagLabels?.[b] || b).toString();
-    return la.localeCompare(lb, 'uz');
+  // ✅ TAGLARNI LABEL BO'YICHA (ALFAVIT) SARALASH (optional chaining yo'q)
+  const sortedTags = (productTagsEnum || []).slice().sort(function(a, b){
+    const la = ((productTagLabels && productTagLabels[a]) ? productTagLabels[a] : a) + '';
+    const lb = ((productTagLabels && productTagLabels[b]) ? productTagLabels[b] : b) + '';
+    return la.localeCompare(lb);
   });
 %>
 
@@ -49,19 +49,18 @@
         <form class="filterform" method="GET" action="/admin/product/all">
           <div class="fgroup">
             <label>Qidirish</label>
-            <input class="finput" type="text" name="q" value="<%= filters?.q || '' %>"
+            <input class="finput" type="text" name="q"
+              value="<%= (filters && filters.q) ? filters.q : '' %>"
               placeholder="Masalan: Cledbel" />
           </div>
 
           <div class="fgroup">
             <label>Teg</label>
             <select class="fselect" name="tag">
-              <option value="ALL" <%=(filters?.tag==='ALL' )?'selected':'' %>>Barchasi</option>
-
-              <!-- ✅ SORT QILINGAN TAGLAR -->
+              <option value="ALL" <%= (filters && filters.tag === 'ALL') ? 'selected' : '' %>>Barchasi</option>
               <% (sortedTags || []).forEach(function(t){ %>
-                <option value="<%= t %>" <%=(filters?.tag===t)?'selected':'' %>>
-                  <%= productTagLabels?.[t] || t %>
+                <option value="<%= t %>" <%= (filters && filters.tag === t) ? 'selected' : '' %>>
+                  <%= (productTagLabels && productTagLabels[t]) ? productTagLabels[t] : t %>
                 </option>
               <% }) %>
             </select>
@@ -70,31 +69,31 @@
           <div class="fgroup">
             <label>Saralash</label>
             <select class="fselect" name="sort">
-              <option value="newest" <%=(filters?.sort==='newest' )?'selected':'' %>>Eng yangi</option>
-              <option value="oldest" <%=(filters?.sort==='oldest' )?'selected':'' %>>Eng eski</option>
-              <option value="price_asc" <%=(filters?.sort==='price_asc' )?'selected':'' %>>Narx (↑)</option>
-              <option value="price_desc" <%=(filters?.sort==='price_desc' )?'selected':'' %>>Narx (↓)</option>
-              <option value="name_asc" <%=(filters?.sort==='name_asc' )?'selected':'' %>>Nom (A→Z)</option>
-              <option value="name_desc" <%=(filters?.sort==='name_desc' )?'selected':'' %>>Nom (Z→A)</option>
+              <option value="newest" <%= (filters && filters.sort === 'newest') ? 'selected' : '' %>>Eng yangi</option>
+              <option value="oldest" <%= (filters && filters.sort === 'oldest') ? 'selected' : '' %>>Eng eski</option>
+              <option value="price_asc" <%= (filters && filters.sort === 'price_asc') ? 'selected' : '' %>>Narx (↑)</option>
+              <option value="price_desc" <%= (filters && filters.sort === 'price_desc') ? 'selected' : '' %>>Narx (↓)</option>
+              <option value="name_asc" <%= (filters && filters.sort === 'name_asc') ? 'selected' : '' %>>Nom (A→Z)</option>
+              <option value="name_desc" <%= (filters && filters.sort === 'name_desc') ? 'selected' : '' %>>Nom (Z→A)</option>
             </select>
           </div>
 
           <div class="fgroup">
             <label>Rasm</label>
             <select class="fselect" name="hasImage">
-              <option value="ALL" <%=(filters?.hasImage==='ALL' ) ? 'selected' : '' %>>Barchasi</option>
-              <option value="YES" <%=(filters?.hasImage==='YES' ) ? 'selected' : '' %>>Rasm bor</option>
-              <option value="NO" <%=(filters?.hasImage==='NO' ) ? 'selected' : '' %>>Rasm yo‘q</option>
+              <option value="ALL" <%= (filters && filters.hasImage === 'ALL') ? 'selected' : '' %>>Barchasi</option>
+              <option value="YES" <%= (filters && filters.hasImage === 'YES') ? 'selected' : '' %>>Rasm bor</option>
+              <option value="NO" <%= (filters && filters.hasImage === 'NO') ? 'selected' : '' %>>Rasm yo‘q</option>
             </select>
           </div>
 
           <div class="fgroup">
             <label>Holat</label>
             <select class="fselect" name="status">
-              <option value="ALL" <%=(filters?.status==='ALL' ) ? 'selected' : '' %>>Barchasi</option>
-              <option value="PROCESS" <%=(filters?.status==='PROCESS' ) ? 'selected' : '' %>>FAOL</option>
-              <option value="PAUSE" <%=(filters?.status==='PAUSE' ) ? 'selected' : '' %>>TO‘XTATILGAN</option>
-              <option value="DELETE" <%=(filters?.status==='DELETE' ) ? 'selected' : '' %>>O‘CHIRILGAN</option>
+              <option value="ALL" <%= (filters && filters.status === 'ALL') ? 'selected' : '' %>>Barchasi</option>
+              <option value="PROCESS" <%= (filters && filters.status === 'PROCESS') ? 'selected' : '' %>>FAOL</option>
+              <option value="PAUSE" <%= (filters && filters.status === 'PAUSE') ? 'selected' : '' %>>TO‘XTATILGAN</option>
+              <option value="DELETE" <%= (filters && filters.status === 'DELETE') ? 'selected' : '' %>>O‘CHIRILGAN</option>
             </select>
           </div>
 
@@ -110,7 +109,7 @@
         <div class="card-head">
           <div class="card-title">Ro‘yxat</div>
           <div class="card-note">
-            <%= products?.length || 0 %> ta mahsulot
+            <%= (products && products.length) ? products.length : 0 %> ta mahsulot
           </div>
         </div>
 
@@ -173,9 +172,9 @@
                     <td>
                       <div class="row-actions">
                         <select class="select new-product-status" id="<%= p._id %>">
-                          <option value="PAUSE" <%=p.productStatus==='PAUSE' ? 'selected' : '' %>>TO‘XTATILGAN</option>
-                          <option value="PROCESS" <%=p.productStatus==='PROCESS' ? 'selected' : '' %>>FAOL</option>
-                          <option value="DELETE" <%=p.productStatus==='DELETE' ? 'selected' : '' %>>O‘CHIRILGAN</option>
+                          <option value="PAUSE" <%= (p.productStatus === 'PAUSE') ? 'selected' : '' %>>TO‘XTATILGAN</option>
+                          <option value="PROCESS" <%= (p.productStatus === 'PROCESS') ? 'selected' : '' %>>FAOL</option>
+                          <option value="DELETE" <%= (p.productStatus === 'DELETE') ? 'selected' : '' %>>O‘CHIRILGAN</option>
                         </select>
 
                         <button class="btn btn-ghost btn-sm" type="button"
@@ -224,7 +223,6 @@
           <div class="field">
             <label>Teglar (bir nechta tanlash mumkin)</label>
             <div class="tagsGrid">
-              <!-- ✅ SORT QILINGAN TAGLAR -->
               <% (sortedTags || []).forEach(function(tag){ %>
                 <label class="tagCheck">
                   <input type="checkbox" name="productTags" value="<%= tag %>" />
@@ -245,7 +243,7 @@
               <% for (let i=1; i<=5; i++) { %>
                 <div class="uploadBox">
                   <img src="/img/upload.svg" id="image-section-<%= i %>" alt="upload" />
-                  <input type="file" name="productImages" <%=i===1 ? 'required' : '' %>
+                  <input type="file" name="productImages" <%= (i===1) ? 'required' : '' %>
                     accept="image/*" onchange="previewFileHandler(this, <%= i %>)" />
                 </div>
               <% } %>
@@ -260,12 +258,13 @@
         </form>
       </section>
 
-      <!-- EDIT MODAL (same page) -->
+      <!-- EDIT MODAL -->
       <div class="modal-backdrop" id="editBackdrop"></div>
 
       <section class="card create" id="editBox">
         <form id="editForm" class="form" enctype="multipart/form-data">
           <input type="hidden" name="productStatus" id="editStatus" value="PAUSE" />
+          <input type="hidden" name="existingImagesJson" id="existingImagesJson" value="[]" />
 
           <div class="grid2">
             <div class="field">
@@ -282,7 +281,6 @@
           <div class="field">
             <label>Teglar</label>
             <div class="tagsGrid" id="editTagsGrid">
-              <!-- ✅ SORT QILINGAN TAGLAR -->
               <% (sortedTags || []).forEach(function(tag){ %>
                 <label class="tagCheck">
                   <input type="checkbox" name="productTags" value="<%= tag %>" />
@@ -304,16 +302,17 @@
           </div>
 
           <div class="field">
-            <label>Yangi rasmlar (0–5 ta)</label>
+            <label>Yangi rasmlar (0–5 ta) — faqat tanlangan slot yangilanadi</label>
             <div class="uploadRow">
-              <% for (let i=1; i<=5; i++) { %>
+              <% for (let i=0; i<5; i++) { %>
                 <div class="uploadBox">
                   <img src="/img/upload.svg" id="edit-image-<%= i %>" alt="upload" />
-                  <input type="file" name="productImage" accept="image/*"
+                  <input type="file" name="productImage<%= i %>" accept="image/*"
                     onchange="previewEditImage(this, <%= i %>)" />
                 </div>
               <% } %>
             </div>
+            <div class="hint">Eslatma: faqat rasm tanlangan slot yangilanadi, qolganlari saqlanadi.</div>
           </div>
 
           <div class="formActions">
@@ -322,9 +321,7 @@
           </div>
         </form>
       </section>
-  </div>
-
-  </main>
+    </main>
   </div>
 
   <script type="text/javascript" src="/js/products.js"></script>

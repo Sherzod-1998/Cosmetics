@@ -170,23 +170,37 @@ productController.updateChosenProduct = async (req: Request, res: Response) => {
 		console.log('updateChosenProduct');
 		const id = req.params.id;
 
-		// ✅ multer array() -> req.files
-		const files = (req.files as Express.Multer.File[]) || [];
-
-		// ✅ agar yangi rasm(lar) kelsa, DBga yozish uchun body ga qo‘shamiz
-		if (files.length) {
-			const newImages = files.map((f) => (f.path || '').replace(/\\/g, '/'));
-			// f.path: masalan "uploads/products/abc.jpg"
-
-			// Variant A: yangi rasmlar kelsa, eski rasmlarni to‘liq almashtirish
-			req.body.productImages = newImages;
-
-			// Variant B: yangi rasmlarni eski rasmlar ustiga qo‘shib yuborish (append) — pastda service’da qilamiz
-			// req.body.__newImages = newImages; // xohlasangiz shunday yuborib, service’da merge qiling
+		// ✅ eski rasmlar ro'yxati edit formdan keladi
+		const existingJson = (req.body.existingImagesJson || '[]') as string;
+		let existingImages: string[] = [];
+		try {
+			existingImages = JSON.parse(existingJson);
+			if (!Array.isArray(existingImages)) existingImages = [];
+		} catch {
+			existingImages = [];
 		}
+
+		// ✅ multer.fields() -> req.files object
+		const filesMap = (req.files || {}) as Record<string, Express.Multer.File[]>;
+
+		// ✅ slot bo'yicha merge
+		const nextImages = [...existingImages];
+		for (let i = 0; i < 5; i++) {
+			const key = `productImage${i}`;
+			const fileArr = filesMap[key];
+			if (fileArr && fileArr[0]) {
+				const newPath = (fileArr[0].path || '').replace(/\\/g, '/');
+				nextImages[i] = newPath; // faqat shu slot yangilanadi
+			}
+		}
+
+		// ✅ bo'sh slotlarni olib tashlash (xohlasangiz qoldirsa ham bo'ladi)
+		req.body.productImages = nextImages.filter(Boolean);
 
 		const result = await productService.updateChosenProduct(id, req.body);
 		res.status(HttpCode.OK).json({ data: result });
+		console.log('body keys:', Object.keys(req.body));
+		console.log('files keys:', Object.keys(req.files || {}));
 	} catch (err) {
 		console.log('Error updateChosenProduct', err);
 		if (err instanceof Errors) {

@@ -116,7 +116,6 @@ function openEditFromBtn(btnEl) {
 function openEdit(product) {
 	window.__editId = product._id;
 
-	// fields
 	document.getElementById('editName').value = product.productName || '';
 	document.getElementById('editPrice').value = product.productPrice || '';
 	document.getElementById('editDesc').value = product.productDesc || '';
@@ -127,13 +126,37 @@ function openEdit(product) {
 		cb.checked = Array.isArray(product.productTags) && product.productTags.includes(cb.value);
 	});
 
-	// existing images preview
+	const imgs = Array.isArray(product.productImages) ? product.productImages : [];
+
+	// ✅ backendga eski rasmlar ro'yxati ketadi
+	const hidden = document.getElementById('existingImagesJson');
+	if (hidden) hidden.value = JSON.stringify(imgs);
+
+	// ✅ 5 slot preview
+	for (let i = 0; i < 5; i++) {
+		const imgEl = document.getElementById(`edit-image-${i}`);
+		if (!imgEl) continue;
+
+		const raw = imgs[i];
+		if (raw) {
+			const src = raw.startsWith('http') ? raw : raw.startsWith('/') ? raw : '/' + raw;
+			imgEl.src = src;
+		} else {
+			imgEl.src = '/img/upload.svg';
+		}
+	}
+
+	// ✅ edit file inputlarni reset
+	document.querySelectorAll('#editBox input[type="file"]').forEach((inp) => (inp.value = ''));
+
+	// existingImages (ixtiyoriy galeraya ham chiqarish)
 	const existingWrap = document.getElementById('existingImages');
 	existingWrap.innerHTML = '';
-	if (product.productImages && product.productImages.length) {
-		product.productImages.forEach((img) => {
+	if (imgs.length) {
+		imgs.forEach((raw) => {
+			const src = raw.startsWith('http') ? raw : raw.startsWith('/') ? raw : '/' + raw;
 			const el = document.createElement('img');
-			el.src = '/' + img;
+			el.src = src;
 			el.className = 'thumb';
 			el.style.width = '70px';
 			el.style.height = '70px';
@@ -149,25 +172,12 @@ function openEdit(product) {
 		existingWrap.innerHTML = '<span class="muted">Rasm yo‘q</span>';
 	}
 
-	// reset edit upload previews + file inputs
-	for (let i = 1; i <= 5; i++) {
-		const img = document.getElementById(`edit-image-${i}`);
-		if (img) img.src = '/img/upload.svg';
-
-		// file inputni reset qilish
-		const input = document.querySelector(`#editBox input[type="file"][name="productImage"]:nth-of-type(${i})`);
-		// nth-of-type bu yerda ishonchsiz bo‘lishi mumkin — shuning uchun umumiy reset:
-	}
-	document.querySelectorAll('#editBox input[type="file"]').forEach((inp) => (inp.value = ''));
-
-	// open modal
 	document.getElementById('editBackdrop').classList.add('open');
 	document.body.classList.add('modal-open');
 
 	const box = document.getElementById('editBox');
 	box.classList.add('open');
 
-	// modal ichidagi scroll tepaga (form uzun bo'lsa)
 	const form = box.querySelector('.form');
 	if (form) form.scrollTop = 0;
 }
@@ -185,22 +195,22 @@ function closeEdit() {
 
 // EDIT preview (edit-image-1..5)
 function previewEditImage(input, idx) {
-	const file = input.files && input.files[0];
-	if (!file) return;
+  const file = input.files && input.files[0];
+  if (!file) return;
 
-	const validImageType = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp'];
-	if (!validImageType.includes(file.type)) {
-		alert('Faqat jpg, jpeg, png (va webp) rasm yuklang!');
-		input.value = '';
-		return;
-	}
+  const validImageType = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp'];
+  if (!validImageType.includes(file.type)) {
+    alert('Faqat jpg, jpeg, png (va webp) rasm yuklang!');
+    input.value = '';
+    return;
+  }
 
-	const reader = new FileReader();
-	reader.onload = function () {
-		const imgEl = document.getElementById(`edit-image-${idx}`);
-		if (imgEl) imgEl.src = reader.result;
-	};
-	reader.readAsDataURL(file);
+  const reader = new FileReader();
+  reader.onload = function () {
+    const imgEl = document.getElementById(`edit-image-${idx}`);
+    if (imgEl) imgEl.src = reader.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 async function deleteProduct(id, name) {
