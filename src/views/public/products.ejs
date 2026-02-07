@@ -217,7 +217,7 @@
                 <div class="relative aspect-[4/5] w-full bg-secondary rounded-[20px] overflow-hidden mb-3">
                   <% if (p.productImages && p.productImages.length) { const raw=p.productImages[0]; const
                     src=raw.startsWith('http') ? raw : (raw.startsWith('/') ? raw : '/' + raw); %>
-                    <img class="thumb" src="<%= src %>" alt="Rasm"
+                    <img class="thumb object-cover w-full h-full" src="<%= src %>" alt="Rasm" ... />
                       onerror="this.outerHTML='<span class=&quot;muted&quot;>Rasm yo‘q</span>';" />
                     <% } else { %>
                       <span class="muted">Rasm yo‘q</span>
@@ -239,9 +239,9 @@
                 </div>
 
                 <div class="space-y-1.5 px-1">
-                  <h3 class="text-sm font-bold text-foreground leading-tight">
-                    <%= p.productName %>
-                  </h3>
+                  <h3 class="text-sm font-bold text-foreground leading-tight line-clamp-2 min-h-[40px]">
+  <%= p.productName %>
+</h3>
 
                   <p class="text-xs text-muted-foreground truncate">
                     <%= p.productDesc ? p.productDesc : 'Product description goes here.' %>
