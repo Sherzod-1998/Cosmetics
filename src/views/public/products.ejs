@@ -250,7 +250,7 @@
                   <div class="pt-2 flex flex-col gap-3">
                     <div class="flex items-center gap-2">
                       <span class="text-base font-black text-foreground">
-                        <%= p.productPrice %> so‘m
+                        <%= new Intl.NumberFormat('fr-FR').format(p.productPrice) %> so‘m
                       </span>
 
                       <% if (p.productOldPrice && p.productOldPrice> p.productPrice) { %>
