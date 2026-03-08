@@ -35,6 +35,7 @@ router.get('/', productController.getPublicProducts);
 router.post('/order/create', memberController.verifyAuth, orderController.createOrder);
 router.get('/order/all', memberController.verifyAuth, orderController.getMyOrders);
 router.post('/order/update', memberController.verifyAuth, orderController.updateOrder);
+router.post('/order/checkout/telegram', memberController.verifyAuth, orderController.checkoutToTelegram);
 /** Order  */
 
 export default router;

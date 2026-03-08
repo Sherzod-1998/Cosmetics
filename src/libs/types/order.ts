@@ -42,3 +42,16 @@ export interface OrderUpdateInput {
 	orderId: string;
 	orderStatus: OrderStatus;
 }
+
+export interface TelegramCheckoutItemInput {
+	productId: string;
+	productName: string;
+	quantity: number;
+	price: number;
+}
+
+export interface TelegramCheckoutInput {
+	items: TelegramCheckoutItemInput[];
+	subtotal: number;
+	totalCount: number;
+}
