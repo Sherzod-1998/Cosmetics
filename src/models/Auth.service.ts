@@ -27,9 +27,13 @@ class AuthService {
 		});
 	}
 	public async checkAuth(token: string): Promise<Member> {
-		const result: Member = (await jwt.verify(token, this.secretToken)) as Member;
-		console.log(`--- [AUTH] memberNick: ${result.memberNick} ---`);
-		return result;
+		try {
+			const result: Member = (await jwt.verify(token, this.secretToken)) as Member;
+			console.log(`--- [AUTH] memberNick: ${result.memberNick} ---`);
+			return result;
+		} catch {
+			throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
+		}
 	}
 
 	public verifyTelegramAuth(payload: TelegramLoginPayload): void {

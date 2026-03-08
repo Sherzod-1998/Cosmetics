@@ -17,6 +17,19 @@ const memberService = new MemberService();
 const authService = new AuthService();
 const memberController: T = {};
 
+function extractToken(req: Request): string | null {
+	const cookieToken = req.cookies?.['accessToken'];
+	if (cookieToken) return cookieToken;
+
+	const authHeader = req.headers.authorization;
+	if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+		const bearerToken = authHeader.slice('Bearer '.length).trim();
+		return bearerToken || null;
+	}
+
+	return null;
+}
+
 memberController.getSeller = async (req: Request, res: Response) => {
 	try {
 		console.log('getSeller');
@@ -85,8 +98,8 @@ memberController.logout = (req: ExtendedRequest, res: Response) => {
 
 memberController.verifyAuth = async (req: ExtendedRequest, res: Response, next: NextFunction) => {
 	try {
-		const token = req.cookies['accessToken'];
-		console.log('token', token);
+		const token = extractToken(req);
+		console.log('token', token ? 'exists' : 'undefined');
 		if (token) req.member = await authService.checkAuth(token);
 
 		if (!req.member) throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
@@ -144,7 +157,7 @@ memberController.getTopUsers = async (req: Request, res: Response) => {
 };
 memberController.retrieveAuth = async (req: ExtendedRequest, res: Response, next: NextFunction) => {
 	try {
-		const token = req.cookies['accessToken'];
+		const token = extractToken(req);
 		if (token) req.member = await authService.checkAuth(token);
 		next();
 	} catch (err) {
