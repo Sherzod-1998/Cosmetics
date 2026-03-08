@@ -20,6 +20,7 @@ export interface ProductInquiry {
 	page: number;
 	limit: number;
 	productCollection?: ProductCollection[];
+	productTag?: string[];
 	search?: string;
 }
 

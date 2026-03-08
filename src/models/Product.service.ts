@@ -19,7 +19,14 @@ class ProductService {
 		this.viewService = new ViewService();
 	}
 
-	public async getProducts(inquiry: ProductInquiry): Promise<Product[]> {
+	public async getProducts(inquiry: ProductInquiry): Promise<{
+		items: Product[];
+		page: number;
+		limit: number;
+		total: number;
+		totalPages: number;
+		availableTags: string[];
+	}> {
 		const match: T = { productStatus: ProductStatus.PROCESS };
 
 		if (inquiry.productCollection && inquiry.productCollection.length > 0) {
@@ -30,20 +37,35 @@ class ProductService {
 			match.productName = { $regex: new RegExp(inquiry.search, 'i') };
 		}
 
+		if (inquiry.productTag && inquiry.productTag.length > 0) {
+			match.productTags = { $in: inquiry.productTag };
+		}
+
 		const sort: T = inquiry.order === 'productPrice' ? { [inquiry.order]: 1 } : { [inquiry.order]: -1 };
 
-		const result = await this.productModel
+		const page = Math.max(1, inquiry.page || 1);
+		const limit = Math.max(1, inquiry.limit || 8);
+
+		// ✅ bitta queryda items + total olish (facet)
+		const [agg] = await this.productModel
 			.aggregate([
 				{ $match: match },
-				{ $sort: sort },
-				{ $skip: (inquiry.page * 1 - 1) * inquiry.limit },
-				{ $limit: inquiry.limit * 1 },
+				{
+					$facet: {
+						items: [{ $sort: sort }, { $skip: (page - 1) * limit }, { $limit: limit }],
+						meta: [{ $count: 'total' }],
+						tags: [{ $unwind: '$productTags' }, { $group: { _id: '$productTags' } }, { $sort: { _id: 1 } }],
+					},
+				},
 			])
 			.exec();
 
-		if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+		const items = (agg?.items ?? []) as Product[];
+		const total = Number(agg?.meta?.[0]?.total ?? 0);
+		const totalPages = Math.max(1, Math.ceil(total / limit));
+		const availableTags = (agg?.tags ?? []).map((t: any) => String(t?._id)).filter(Boolean);
 
-		return result;
+		return { items, page, limit, total, totalPages, availableTags };
 	}
 
 	public async getPublicProducts(inquiry?: { q?: string; tag?: string; sort?: string; page?: number; limit?: number }) {

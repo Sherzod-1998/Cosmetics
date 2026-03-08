@@ -16,7 +16,7 @@ productController.getProducts = async (req: Request, res: Response) => {
 	try {
 		console.log('getProducts');
 
-		const { page, limit, order, productCollection, search } = req.query;
+		const { page, limit, order, productCollection, productTag, search } = req.query;
 
 		const inquiry: ProductInquiry = {
 			order: String(order),
@@ -33,13 +33,20 @@ productController.getProducts = async (req: Request, res: Response) => {
 			}
 		}
 
+		if (productTag) {
+			if (Array.isArray(productTag)) {
+				inquiry.productTag = productTag.map(String);
+			} else if (typeof productTag === 'string') {
+				inquiry.productTag = [productTag];
+			}
+		}
+
 		// Optional search
 		if (search) inquiry.search = String(search);
 
 		const result = await productService.getProducts(inquiry);
 
 		console.log('result', result);
-
 		res.status(HttpCode.OK).json(result);
 	} catch (err) {
 		console.log('Error, getProducts:', err);
