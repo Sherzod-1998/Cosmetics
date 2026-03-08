@@ -22,6 +22,49 @@ function resolveTelegramId(member: ExtendedRequest['member']): string | null {
 	return null;
 }
 
+async function sendTelegramMessage(botToken: string, chatId: string, text: string): Promise<void> {
+	const tgResp = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({
+			chat_id: chatId,
+			text,
+		}),
+	});
+
+	if (!tgResp.ok) {
+		const errorText = await tgResp.text();
+		console.log('Error, sendTelegramMessage:', errorText);
+		throw new Errors(HttpCode.INTERNAL_SERVER_ERROR, Message.SOMETHING_WENT_WRONG);
+	}
+}
+
+async function resolveAdminChatId(botToken: string): Promise<string> {
+	const directId = (process.env.TG_ADMIN_CHAT_ID || process.env.TELEGRAM_ADMIN_CHAT_ID || '').trim();
+	if (directId) return directId;
+
+	const adminUsername = (process.env.TG_ADMIN_USERNAME || process.env.TELEGRAM_ADMIN_USERNAME || '').trim();
+	if (!adminUsername) return '';
+
+	const username = adminUsername.startsWith('@') ? adminUsername : `@${adminUsername}`;
+	const resp = await fetch(
+		`https://api.telegram.org/bot${botToken}/getChat?chat_id=${encodeURIComponent(username)}`,
+	);
+	if (!resp.ok) {
+		const errorText = await resp.text();
+		console.log('Error, resolveAdminChatId getChat:', errorText);
+		return '';
+	}
+
+	const payload = (await resp.json()) as {
+		ok?: boolean;
+		result?: { id?: number | string };
+	};
+	if (!payload?.ok || payload?.result?.id === undefined || payload?.result?.id === null) return '';
+
+	return String(payload.result.id);
+}
+
 orderController.createOrder = async (req: ExtendedRequest, res: Response) => {
 	try {
 		console.log('createOrder');
@@ -80,6 +123,7 @@ orderController.checkoutToTelegram = async (req: ExtendedRequest, res: Response)
 	try {
 		const botToken = process.env.TG_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
 		if (!botToken) throw new Errors(HttpCode.INTERNAL_SERVER_ERROR, Message.SOMETHING_WENT_WRONG);
+		const adminChatId = await resolveAdminChatId(botToken);
 
 		const telegramId = resolveTelegramId(req.member);
 		if (!telegramId) throw new Errors(HttpCode.BAD_REQUEST, Message.NOT_AUTHENTICATED);
@@ -101,20 +145,9 @@ orderController.checkoutToTelegram = async (req: ExtendedRequest, res: Response)
 			Number(input.subtotal) || 0,
 		)} so'm`;
 		const text = `${header}\n\n${lines}${summary}`;
-
-		const tgResp = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				chat_id: telegramId,
-				text,
-			}),
-		});
-
-		if (!tgResp.ok) {
-			const errorText = await tgResp.text();
-			console.log('Error, checkoutToTelegram sendMessage:', errorText);
-			throw new Errors(HttpCode.INTERNAL_SERVER_ERROR, Message.SOMETHING_WENT_WRONG);
+		await sendTelegramMessage(botToken, telegramId, text);
+		if (adminChatId && adminChatId !== telegramId) {
+			await sendTelegramMessage(botToken, adminChatId, text);
 		}
 
 		res.status(HttpCode.OK).json({ ok: true });
