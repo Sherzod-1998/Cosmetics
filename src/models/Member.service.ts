@@ -1,9 +1,10 @@
 import MemberModel from '../schema/Member.model';
-import { LoginInput, Member, MemberInput, MemberUpdateInput } from '../libs/types/member';
+import { LoginInput, Member, MemberInput, MemberUpdateInput, TelegramLoginPayload } from '../libs/types/member';
 import Errors, { HttpCode, Message } from '../libs/Errors';
 import { MemberStatus, MemberType } from '../libs/enums/member.enum';
 import * as bcrypt from 'bcryptjs';
 import { shapeIntoMongooseObjectId } from '../libs/config';
+import crypto from 'crypto';
 
 class MemberService {
 	private readonly memberModel;
@@ -101,6 +102,66 @@ class MemberService {
 		const result = await this.memberModel.findByIdAndUpdate({ _id: (input as any)._id }, input, { new: true }).exec();
 		if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
 		return result as any;
+	}
+
+	private sanitizeNick(raw: string): string {
+		const normalized = raw.replace(/[^a-zA-Z0-9_]/g, '').trim();
+		return normalized || 'tguser';
+	}
+
+	private async makeUniqueNick(base: string): Promise<string> {
+		const cleanBase = this.sanitizeNick(base);
+		let candidate = cleanBase;
+		let counter = 1;
+
+		while (await this.memberModel.exists({ memberNick: candidate })) {
+			candidate = `${cleanBase}_${counter}`;
+			counter += 1;
+		}
+
+		return candidate;
+	}
+
+	public async loginWithTelegram(payload: TelegramLoginPayload): Promise<Member> {
+		const telegramId = String(payload.id);
+		const memberPhone = `tg_${telegramId}`;
+
+		let member = await this.memberModel.findOne({ telegramId }).exec();
+		if (!member) {
+			member = await this.memberModel.findOne({ memberPhone }).exec();
+		}
+
+		if (member) {
+			member.telegramId = telegramId;
+			member.telegramUsername = payload.username || member.telegramUsername;
+			if (payload.photo_url) member.memberImage = payload.photo_url;
+			await member.save();
+			return member.toJSON ? (member.toJSON() as any) : (member as any);
+		}
+
+		const salt = await bcrypt.genSalt();
+		const randomPass = crypto.randomBytes(24).toString('hex');
+		const hashedPassword = await bcrypt.hash(randomPass, salt);
+
+		const first = String(payload.first_name || '').trim();
+		const last = String(payload.last_name || '').trim();
+		const desc = `${first} ${last}`.trim();
+		const preferredNick = String(payload.username || `tg_${telegramId}`);
+		const memberNick = await this.makeUniqueNick(preferredNick);
+
+		const created = await this.memberModel.create({
+			memberType: MemberType.USER,
+			memberStatus: MemberStatus.ACTIVE,
+			memberNick,
+			memberPhone,
+			memberPassword: hashedPassword,
+			memberDesc: desc || undefined,
+			memberImage: payload.photo_url || undefined,
+			telegramId,
+			telegramUsername: payload.username || undefined,
+		});
+
+		return created.toJSON ? (created.toJSON() as any) : (created as any);
 	}
 
 	/** SSR */

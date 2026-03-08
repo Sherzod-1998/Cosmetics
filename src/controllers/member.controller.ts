@@ -1,7 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { T } from '../libs/types/common';
 import MemberService from '../models/Member.service';
-import { ExtendedRequest, LoginInput, Member, MemberInput, MemberUpdateInput } from '../libs/types/member';
+import {
+	ExtendedRequest,
+	LoginInput,
+	Member,
+	MemberInput,
+	MemberUpdateInput,
+	TelegramLoginPayload,
+} from '../libs/types/member';
 import Errors, { HttpCode, Message } from '../libs/Errors';
 import AuthService from '../models/Auth.service';
 import { AUTH_TIMER } from '../libs/config';
@@ -143,6 +150,28 @@ memberController.retrieveAuth = async (req: ExtendedRequest, res: Response, next
 	} catch (err) {
 		console.log('Error, retrieveAuth:', err);
 		next();
+	}
+};
+
+memberController.telegramLogin = async (req: Request, res: Response) => {
+	try {
+		console.log('telegramLogin');
+		const payload = req.body as TelegramLoginPayload;
+
+		authService.verifyTelegramAuth(payload);
+		const result = await memberService.loginWithTelegram(payload);
+		const token = await authService.createToken(result);
+
+		res.cookie('accessToken', token, {
+			maxAge: AUTH_TIMER * 3600 * 1000,
+			httpOnly: false,
+		});
+
+		res.status(HttpCode.OK).json({ member: result, accessToken: token });
+	} catch (err) {
+		console.log('Error, telegramLogin:', err);
+		if (err instanceof Errors) res.status(err.code).json(err);
+		else res.status(Errors.standard.code).json(Errors.standard);
 	}
 };
 

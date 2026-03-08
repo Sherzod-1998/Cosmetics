@@ -42,6 +42,13 @@ const memberSchema = new Schema(
 		memberImage: {
 			type: String,
 		},
+		telegramId: {
+			type: String,
+			index: { unique: true, sparse: true },
+		},
+		telegramUsername: {
+			type: String,
+		},
 
 		memberPoints: {
 			type: Number,

@@ -11,6 +11,9 @@ router.get('/member/seller', memberController.getSeller);
 router.post('/member/login', memberController.login);
 router.post('/member/signup', memberController.signup);
 router.post('/member/logout', memberController.verifyAuth, memberController.logout);
+router.post('/member/telegram/login', memberController.telegramLogin);
+router.post('/member/auth/telegram/login', memberController.telegramLogin);
+router.post('/auth/telegram/login', memberController.telegramLogin);
 router.get('/member/detail', memberController.verifyAuth, memberController.getMemberDetail);
 router.post(
 	'/member/update',

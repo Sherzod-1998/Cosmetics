@@ -14,6 +14,8 @@ export interface Member {
 	memberAddress?: string;
 	memberDesc?: string;
 	memberImage?: string;
+	telegramId?: string;
+	telegramUsername?: string;
 	memberPoints: number;
 	createdAt: Date;
 	updatedAt: Date;
@@ -36,6 +38,16 @@ export interface LoginInput {
 	memberPassword: string;
 }
 
+export interface TelegramLoginPayload {
+	id: string | number;
+	first_name?: string;
+	last_name?: string;
+	username?: string;
+	photo_url?: string;
+	auth_date: string | number;
+	hash: string;
+}
+
 export interface MemberUpdateInput {
 	_id: Types.ObjectId;
 	memberStatus?: MemberStatus;
@@ -45,6 +57,8 @@ export interface MemberUpdateInput {
 	memberAddress?: string;
 	memberDesc?: string;
 	memberImage?: string;
+	telegramId?: string;
+	telegramUsername?: string;
 }
 
 export interface ExtendedRequest extends Request {
