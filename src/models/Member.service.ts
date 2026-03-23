@@ -177,7 +177,7 @@ class MemberService {
 			const result = await tempResult.save();
 			(result as any).memberPassword = '';
 			return result as any;
-		} catch (err) {
+		} catch {
 			throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
 		}
 	}

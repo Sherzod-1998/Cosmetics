@@ -47,9 +47,7 @@ async function resolveAdminChatId(botToken: string): Promise<string> {
 	if (!adminUsername) return '';
 
 	const username = adminUsername.startsWith('@') ? adminUsername : `@${adminUsername}`;
-	const resp = await fetch(
-		`https://api.telegram.org/bot${botToken}/getChat?chat_id=${encodeURIComponent(username)}`,
-	);
+	const resp = await fetch(`https://api.telegram.org/bot${botToken}/getChat?chat_id=${encodeURIComponent(username)}`);
 	if (!resp.ok) {
 		const errorText = await resp.text();
 		console.log('Error, resolveAdminChatId getChat:', errorText);

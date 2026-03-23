@@ -1,5 +1,3 @@
-// mongoose dan Types ni import qiling
-import mongoose, { Types } from 'mongoose';
 import { Order, OrderInquiry, OrderItemInput, OrderUpdateInput } from '../libs/types/order';
 import Errors, { HttpCode, Message } from '../libs/Errors';
 import { Member } from '../libs/types/member';
